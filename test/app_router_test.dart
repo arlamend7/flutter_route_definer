@@ -141,7 +141,7 @@ void main() {
     });
 
     test('buildRouteState parses RouteSettings correctly', () {
-      final settings = RouteSettings(name: '/page?query=test#frag', arguments: {'some': 'data'});
+      const settings = RouteSettings(name: '/page?query=test#frag', arguments: {'some': 'data'});
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, '/page');
       expect(state.queryParams, containsPair('query', 'test'));
@@ -187,7 +187,7 @@ void main() {
 
   group('AppRouter.analyzeRoute parsing tests', () {
     test('Handles URL without query and fragment', () {
-      final settings = RouteSettings(name: '/simplepath', arguments: null);
+      const settings = RouteSettings(name: '/simplepath', arguments: null);
       final result = AppRouter.analyzeRoute(settings);
       expect(result.state.path, '/simplepath');
       expect(result.state.uriParams, isNull);
@@ -199,7 +199,7 @@ void main() {
     });
 
     test('Handles URL with only fragment', () {
-      final settings = RouteSettings(name: '/path#section1', arguments: {'foo': 'bar'});
+      const settings = RouteSettings(name: '/path#section1', arguments: {'foo': 'bar'});
       final result = AppRouter.analyzeRoute(settings);
       expect(result.state.path, '/path');
       expect(result.state.uriParams, isNull);
@@ -211,7 +211,7 @@ void main() {
     });
 
     test('Parses multiple query parameters correctly', () {
-      final settings = RouteSettings(name: '/search?term=flutter&sort=asc&filter=none');
+      const settings = RouteSettings(name: '/search?term=flutter&sort=asc&filter=none');
       final result = AppRouter.analyzeRoute(settings);
       expect(result.state.path, '/search');
       expect(result.state.uriParams, isEmpty);
@@ -225,7 +225,7 @@ void main() {
     });
 
     test('Parses path params, query params, and fragment correctly', () {
-      final settings = RouteSettings(name: '/user/42/post/10?sort=desc&highlight=true#section2');
+      const settings = RouteSettings(name: '/user/42/post/10?sort=desc&highlight=true#section2');
       final result = AppRouter.analyzeRoute(settings);
       final state = result.state;
       final match = result.match;
@@ -246,7 +246,7 @@ void main() {
     });
 
     test('Handles /settings/profile with path param and no query/fragment', () {
-      final settings = RouteSettings(name: '/settings/profile');
+      const settings = RouteSettings(name: '/settings/profile');
       final result = AppRouter.analyzeRoute(settings);
       expect(result.state.path, '/settings/profile');
       expect(result.state.uriParams, containsPair('section', 'profile'));
@@ -257,7 +257,7 @@ void main() {
     });
 
     test('Handles /article/123 with query and fragment', () {
-      final settings = RouteSettings(name: '/article/123?ref=newsletter#top');
+      const settings = RouteSettings(name: '/article/123?ref=newsletter#top');
       final result = AppRouter.analyzeRoute(settings);
       expect(result.state.path, '/article/123');
       expect(result.state.uriParams, containsPair('id', '123'));
@@ -270,7 +270,7 @@ void main() {
 
   group('AppRouter advanced tests', () {
     test('buildRouteState handles URL without query and fragment', () {
-      final settings = RouteSettings(name: '/simplepath', arguments: null);
+      const settings = RouteSettings(name: '/simplepath', arguments: null);
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, '/simplepath');
       expect(state.uriParams, isNull);
@@ -280,7 +280,7 @@ void main() {
     });
 
     test('buildRouteState handles URL with only fragment', () {
-      final settings = RouteSettings(name: '/path#section1', arguments: {'foo': 'bar'});
+      const settings = RouteSettings(name: '/path#section1', arguments: {'foo': 'bar'});
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, '/path');
       expect(state.uriParams, isNull);
@@ -290,7 +290,7 @@ void main() {
     });
 
     test('buildRouteState parses multiple query parameters correctly', () {
-      final settings = RouteSettings(name: '/search?term=flutter&sort=asc&filter=none');
+      const settings = RouteSettings(name: '/search?term=flutter&sort=asc&filter=none');
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, '/search');
       expect(state.uriParams, isNull);
@@ -302,7 +302,7 @@ void main() {
     });
 
     test('buildRouteState parses path params, query params, and fragment correctly', () {
-      final settings = RouteSettings(name: '/user/42/post/10?sort=desc&highlight=true#section2');
+      const settings = RouteSettings(name: '/user/42/post/10?sort=desc&highlight=true#section2');
       final result = AppRouter.analyzeRoute(settings);
       final state = result.state;
       final match = result.match;
@@ -360,7 +360,7 @@ void main() {
     });
 
     test('buildRouteState handles empty string path gracefully', () {
-      final settings = RouteSettings(name: '', arguments: null);
+      const settings = RouteSettings(name: '', arguments: null);
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, AppRouter.initialRoute);
       expect(state.uriParams, isNull);
@@ -370,7 +370,7 @@ void main() {
     });
 
     test('buildRouteState handles null RouteSettings.name gracefully', () {
-      final settings = RouteSettings(name: null, arguments: null);
+      const settings = RouteSettings(name: null, arguments: null);
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, AppRouter.initialRoute);
       expect(state.uriParams, isNull);
