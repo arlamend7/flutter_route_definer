@@ -34,6 +34,7 @@ Routing systems in frameworks such as Angular and Express.js provide robust supp
 ### Example Setup
 
 ```dart
+// Guards
 class AuthenticatedRedirectGuard extends RouteGuard {
   @override
   String? redirect(RouteState state) {
@@ -48,19 +49,19 @@ class PasswordChangeProgressGuard extends RouteGuard {
   }
 }
 
-void main() {
-  final mockRoutes = [
+// Route list
+final mockRoutes = [
     RouteDefiner(
-      path: "/login",
-      builder: (context, state) => LoginView(
+        path: "/login",
+        builder: (context, state) => LoginView(
         model: LoginViewModel(
-          context: context,
-          email: state.arguments?.email as String?,
-          password: state.arguments?.password as String?,
-          redirectUrl: state.queryParams['redirectUrl'],
+            context: context,
+            email: state.arguments?.email as String?,
+            password: state.arguments?.password as String?,
+            redirectUrl: state.queryParams['redirectUrl'],
         ),
-      ),
-      guards: [AuthenticatedRedirectGuard()],
+        ),
+        guards: [AuthenticatedRedirectGuard()],
     ),
     RouteDefiner(path: '/main', builder: (_, __) => const Placeholder(), requireAuthorization: true),
     RouteDefiner(path: '/article/:id', builder: (_, __) => const Placeholder()),
@@ -68,39 +69,41 @@ void main() {
     RouteDefiner(path: '/user/:id/post/:postId', builder: (_, __) => const Placeholder()),
     RouteDefiner(path: '/settings/:section', builder: (_, __) => const Placeholder()),
     RouteDefiner(
-      path: '/reset-password',
-      builder: (_, state) => PasswordChangeView(email: state.arguments!["email"]),
-      guards: [PasswordChangeProgressGuard()],
+        path: '/reset-password',
+        builder: (_, state) => PasswordChangeView(email: state.arguments!["email"]),
+        guards: [PasswordChangeProgressGuard()],
     ),
     RouteDefiner(path: '/search', builder: (_, __) => const Placeholder()),
-  ];
+];
 
-  setUpAll(() {
-    AppRouter.init(
-      GlobalRouteDefiner(
-        initialRoute: '/',
-        title: 'Test App',
-        isAuthorized: (state) => DummyUserPrefs.isAuthenticated,
-        onUnknownRoute: (settings, state) => MaterialPageRoute(builder: (_) => const Placeholder()),
-        unauthorizedBuilder: (_, __) => const Placeholder(),
-      ),
-      mockRoutes,
-    );
-  });
+void main() {
+  AppRouter.init(
+    GlobalRouteDefiner(
+      initialRoute: '/login',
+      title: 'Test App',
+      isAuthorized: (state) => DummyUserPrefs.isAuthenticated,
+      onUnknownRoute: (settings, state) => MaterialPageRoute(builder: (_) => const Scaffold(body: Text("404 Not Found"))),
+      unauthorizedBuilder: (_, __) => const Scaffold(body: Text("Unauthorized")),
+    ),
+    mockRoutes,
+  );
 
   runApp(MyApp());
 }
-```
 
-In your `MaterialApp` configuration:
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-```dart
-MaterialApp(
-  title: AppRouter.title,
-  initialRoute: AppRouter.initialRoute,
-  onGenerateRoute: AppRouter.onGenerateRoute,
-  onUnknownRoute: AppRouter.onUnknownRoute,
-)
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: AppRouter.title,
+      initialRoute: AppRouter.initialRoute,
+      onGenerateRoute: AppRouter.onGenerateRoute,
+      onUnknownRoute: AppRouter.onUnknownRoute,
+    );
+  }
+}
 ```
 
 ---

@@ -19,7 +19,8 @@ class DummyUserPrefs {
 
 class AuthenticatedRedirectGuard extends RouteGuard {
   @override
-  String? redirect(RouteState state) => DummyUserPrefs.isAuthenticated ? '/main' : null;
+  String? redirect(RouteState state) =>
+      DummyUserPrefs.isAuthenticated ? '/main' : null;
 }
 
 class PasswordChangeProgressGuard extends RouteGuard {
@@ -35,13 +36,29 @@ void main() {
   final mockRoutes = [
     RouteDefiner(path: '/', builder: (_, __) => const Placeholder()),
     RouteDefiner(path: '/login', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/main', builder: (_, __) => const Placeholder(), requireAuthorization: true),
+    RouteDefiner(
+      path: '/main',
+      builder: (_, __) => const Placeholder(),
+      requireAuthorization: true,
+    ),
     RouteDefiner(path: '/article/:id', builder: (_, __) => const Placeholder()),
     RouteDefiner(path: '/user/:id', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/user/:id/post/:postId', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/settings/:section', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/reset-by-email', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/reset-by-pin', builder: (_, __) => const Placeholder()),
+    RouteDefiner(
+      path: '/user/:id/post/:postId',
+      builder: (_, __) => const Placeholder(),
+    ),
+    RouteDefiner(
+      path: '/settings/:section',
+      builder: (_, __) => const Placeholder(),
+    ),
+    RouteDefiner(
+      path: '/reset-by-email',
+      builder: (_, __) => const Placeholder(),
+    ),
+    RouteDefiner(
+      path: '/reset-by-pin',
+      builder: (_, __) => const Placeholder(),
+    ),
     RouteDefiner(path: '/search', builder: (_, __) => const Placeholder()),
   ];
 
@@ -51,7 +68,9 @@ void main() {
         initialRoute: '/',
         title: 'Test App',
         isAuthorized: (state) => DummyUserPrefs.isAuthenticated,
-        onUnknownRoute: (settings, state) => MaterialPageRoute(builder: (context) => const Placeholder()),
+        onUnknownRoute:
+            (settings, state) =>
+                MaterialPageRoute(builder: (context) => const Placeholder()),
         unauthorizedBuilder: (context, state) => const Placeholder(),
       ),
       mockRoutes,
@@ -61,13 +80,23 @@ void main() {
   group('RouteGuard tests', () {
     test('DummyGuard allows when true', () {
       final guard = DummyGuard(true);
-      final state = RouteState(path: '/home', queryParams: {}, fragment: '', arguments: null);
+      final state = RouteState(
+        path: '/home',
+        queryParams: {},
+        fragment: '',
+        arguments: null,
+      );
       expect(guard.redirect(state), isNull);
     });
 
     test('DummyGuard blocks and redirects when false', () {
       final guard = DummyGuard(false);
-      final state = RouteState(path: '/home', queryParams: {}, fragment: '', arguments: null);
+      final state = RouteState(
+        path: '/home',
+        queryParams: {},
+        fragment: '',
+        arguments: null,
+      );
       expect(guard.redirect(state), '/login');
     });
 
@@ -75,14 +104,24 @@ void main() {
       test('Redirects to /main when authenticated', () {
         DummyUserPrefs.isAuthenticated = true;
         final guard = AuthenticatedRedirectGuard();
-        final state = RouteState(path: '/', queryParams: {}, fragment: '', arguments: null);
+        final state = RouteState(
+          path: '/',
+          queryParams: {},
+          fragment: '',
+          arguments: null,
+        );
         expect(guard.redirect(state), '/main');
       });
 
       test('Allows access when not authenticated', () {
         DummyUserPrefs.isAuthenticated = false;
         final guard = AuthenticatedRedirectGuard();
-        final state = RouteState(path: '/', queryParams: {}, fragment: '', arguments: null);
+        final state = RouteState(
+          path: '/',
+          queryParams: {},
+          fragment: '',
+          arguments: null,
+        );
         expect(guard.redirect(state), isNull);
       });
     });
@@ -102,7 +141,12 @@ void main() {
       test('Allows if local passwordChange progress exists', () {
         DummyUserPrefs.passwordChange = {'step': 1};
         final guard = PasswordChangeProgressGuard();
-        final state = RouteState(path: '/password-change', queryParams: {}, fragment: '', arguments: {});
+        final state = RouteState(
+          path: '/password-change',
+          queryParams: {},
+          fragment: '',
+          arguments: {},
+        );
         expect(guard.redirect(state), isNull);
         DummyUserPrefs.passwordChange = null;
       });
@@ -110,7 +154,12 @@ void main() {
       test('Redirects to / when no progress or email', () {
         DummyUserPrefs.passwordChange = null;
         final guard = PasswordChangeProgressGuard();
-        final state = RouteState(path: '/password-change', queryParams: {}, fragment: '', arguments: {});
+        final state = RouteState(
+          path: '/password-change',
+          queryParams: {},
+          fragment: '',
+          arguments: {},
+        );
         expect(guard.redirect(state), '/');
       });
     });
@@ -120,14 +169,26 @@ void main() {
     group('isNearMatch', () {
       test('Returns true on near miss with missing param', () {
         expect(AppRouter.isNearMatch('/article/:id', '/article'), isTrue);
-        expect(AppRouter.isNearMatch('/user/:id/post/:postId', '/user'), isTrue);
-        expect(AppRouter.isNearMatch('/settings/:section', '/settings'), isTrue);
+        expect(
+          AppRouter.isNearMatch('/user/:id/post/:postId', '/user'),
+          isTrue,
+        );
+        expect(
+          AppRouter.isNearMatch('/settings/:section', '/settings'),
+          isTrue,
+        );
       });
 
       test('Returns false on clear mismatch', () {
         expect(AppRouter.isNearMatch('/article/:id', '/settings'), isFalse);
-        expect(AppRouter.isNearMatch('/user/:id/post/:postId', '/settings'), isFalse);
-        expect(AppRouter.isNearMatch('/settings/:section', '/article'), isFalse);
+        expect(
+          AppRouter.isNearMatch('/user/:id/post/:postId', '/settings'),
+          isFalse,
+        );
+        expect(
+          AppRouter.isNearMatch('/settings/:section', '/article'),
+          isFalse,
+        );
       });
 
       test('Returns false if full match', () {
@@ -141,7 +202,10 @@ void main() {
     });
 
     test('buildRouteState parses RouteSettings correctly', () {
-      const settings = RouteSettings(name: '/page?query=test#frag', arguments: {'some': 'data'});
+      const settings = RouteSettings(
+        name: '/page?query=test#frag',
+        arguments: {'some': 'data'},
+      );
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, '/page');
       expect(state.queryParams, containsPair('query', 'test'));
@@ -199,7 +263,10 @@ void main() {
     });
 
     test('Handles URL with only fragment', () {
-      const settings = RouteSettings(name: '/path#section1', arguments: {'foo': 'bar'});
+      const settings = RouteSettings(
+        name: '/path#section1',
+        arguments: {'foo': 'bar'},
+      );
       final result = AppRouter.analyzeRoute(settings);
       expect(result.state.path, '/path');
       expect(result.state.uriParams, isNull);
@@ -211,7 +278,9 @@ void main() {
     });
 
     test('Parses multiple query parameters correctly', () {
-      const settings = RouteSettings(name: '/search?term=flutter&sort=asc&filter=none');
+      const settings = RouteSettings(
+        name: '/search?term=flutter&sort=asc&filter=none',
+      );
       final result = AppRouter.analyzeRoute(settings);
       expect(result.state.path, '/search');
       expect(result.state.uriParams, isEmpty);
@@ -225,7 +294,9 @@ void main() {
     });
 
     test('Parses path params, query params, and fragment correctly', () {
-      const settings = RouteSettings(name: '/user/42/post/10?sort=desc&highlight=true#section2');
+      const settings = RouteSettings(
+        name: '/user/42/post/10?sort=desc&highlight=true#section2',
+      );
       final result = AppRouter.analyzeRoute(settings);
       final state = result.state;
       final match = result.match;
@@ -280,7 +351,10 @@ void main() {
     });
 
     test('buildRouteState handles URL with only fragment', () {
-      const settings = RouteSettings(name: '/path#section1', arguments: {'foo': 'bar'});
+      const settings = RouteSettings(
+        name: '/path#section1',
+        arguments: {'foo': 'bar'},
+      );
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, '/path');
       expect(state.uriParams, isNull);
@@ -290,7 +364,9 @@ void main() {
     });
 
     test('buildRouteState parses multiple query parameters correctly', () {
-      const settings = RouteSettings(name: '/search?term=flutter&sort=asc&filter=none');
+      const settings = RouteSettings(
+        name: '/search?term=flutter&sort=asc&filter=none',
+      );
       final state = AppRouter.buildRouteState(settings);
       expect(state.path, '/search');
       expect(state.uriParams, isNull);
@@ -301,26 +377,31 @@ void main() {
       expect(state.fragment, isEmpty);
     });
 
-    test('buildRouteState parses path params, query params, and fragment correctly', () {
-      const settings = RouteSettings(name: '/user/42/post/10?sort=desc&highlight=true#section2');
-      final result = AppRouter.analyzeRoute(settings);
-      final state = result.state;
-      final match = result.match;
-      final isNear = result.isNear;
+    test(
+      'buildRouteState parses path params, query params, and fragment correctly',
+      () {
+        const settings = RouteSettings(
+          name: '/user/42/post/10?sort=desc&highlight=true#section2',
+        );
+        final result = AppRouter.analyzeRoute(settings);
+        final state = result.state;
+        final match = result.match;
+        final isNear = result.isNear;
 
-      expect(state.path, '/user/42/post/10');
-      expect(state.uriParams, isNotNull);
-      expect(state.uriParams, containsPair('id', '42'));
-      expect(state.uriParams, containsPair('postId', '10'));
+        expect(state.path, '/user/42/post/10');
+        expect(state.uriParams, isNotNull);
+        expect(state.uriParams, containsPair('id', '42'));
+        expect(state.uriParams, containsPair('postId', '10'));
 
-      expect(state.queryParams.length, 2);
-      expect(state.queryParams['sort'], 'desc');
-      expect(state.queryParams['highlight'], 'true');
+        expect(state.queryParams.length, 2);
+        expect(state.queryParams['sort'], 'desc');
+        expect(state.queryParams['highlight'], 'true');
 
-      expect(state.fragment, 'section2');
-      expect(match, isNotNull);
-      expect(isNear, isFalse);
-    });
+        expect(state.fragment, 'section2');
+        expect(match, isNotNull);
+        expect(isNear, isFalse);
+      },
+    );
 
     test('matchRoute returns correct params for complex route', () {
       final result = AppRouter.matchRoute('/user/99/post/12345');
@@ -328,16 +409,22 @@ void main() {
       expect(result.$1!.path, '/user/:id/post/:postId');
       expect(result.$2, isFalse);
 
-      final params = AppRouter.extractPathParams(result.$1!.path, '/user/99/post/12345');
+      final params = AppRouter.extractPathParams(
+        result.$1!.path,
+        '/user/99/post/12345',
+      );
       expect(params?['id'], '99');
       expect(params?['postId'], '12345');
     });
 
-    test('matchRoute returns null route and false near match for unrelated path', () {
-      final result = AppRouter.matchRoute('/completely/unrelated/path');
-      expect(result.$1, isNull);
-      expect(result.$2, isFalse);
-    });
+    test(
+      'matchRoute returns null route and false near match for unrelated path',
+      () {
+        final result = AppRouter.matchRoute('/completely/unrelated/path');
+        expect(result.$1, isNull);
+        expect(result.$2, isFalse);
+      },
+    );
 
     test('matchRoute near match true when path segments partially match', () {
       final result = AppRouter.matchRoute('/settings');
