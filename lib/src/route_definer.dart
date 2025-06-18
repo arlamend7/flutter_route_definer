@@ -1,5 +1,4 @@
-import 'package:route_definer/src/route_guard.dart';
-import 'package:route_definer/src/route_state.dart';
+import 'package:route_definer/route_definer.dart';
 import 'package:flutter/material.dart';
 
 /// Defines a single route in the app with its path, widget builder,
@@ -26,6 +25,9 @@ class RouteDefiner {
   /// a non-null route path.
   final List<RouteGuard> guards;
 
+  /// Optional route-specific overrides for MaterialPageRoute behavior.
+  final RouteOptions? options;
+
   /// Creates a new [RouteDefiner].
   ///
   /// [path] and [builder] are required.
@@ -36,6 +38,7 @@ class RouteDefiner {
     required this.builder,
     this.requireAuthorization = false,
     this.guards = const [],
+    this.options,
   });
 
   /// Evaluates the guards to determine if a redirect should happen.

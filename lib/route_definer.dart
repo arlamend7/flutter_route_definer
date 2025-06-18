@@ -9,3 +9,4 @@ export 'src/route_definer.dart';
 export 'src/route_guard.dart';
 export 'src/route_state.dart';
 export 'src/global_route_definer.dart';
+export 'src/route_options.dart';

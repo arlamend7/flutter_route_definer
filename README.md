@@ -72,6 +72,7 @@ final mockRoutes = [
         path: '/reset-password',
         builder: (_, state) => PasswordChangeView(email: state.arguments!["email"]),
         guards: [PasswordChangeProgressGuard()],
+        options: const RouteOptions(fullscreenDialog: true),
     ),
     RouteDefiner(path: '/search', builder: (_, __) => const Placeholder()),
 ];
@@ -84,6 +85,13 @@ void main() {
       isAuthorized: (state) => DummyUserPrefs.isAuthenticated,
       onUnknownRoute: (settings, state) => MaterialPageRoute(builder: (_) => const Scaffold(body: Text("404 Not Found"))),
       unauthorizedBuilder: (_, __) => const Scaffold(body: Text("Unauthorized")),
+      defaultRouteOptions: const RouteOptions(
+        fullscreenDialog: false,
+        maintainState: false,
+        allowSnapshotting: false,
+        barrierDismissible: true,
+        requestFocus: false,
+      ),
     ),
     mockRoutes,
   );

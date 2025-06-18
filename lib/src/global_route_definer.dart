@@ -1,5 +1,6 @@
-import 'package:route_definer/src/route_state.dart';
+import 'package:route_definer/route_definer.dart';
 import 'package:flutter/material.dart';
+import 'package:route_definer/src/route_options.dart';
 
 /// Defines global route-related settings and behaviors for the app router.
 ///
@@ -37,6 +38,9 @@ class GlobalRouteDefiner {
   /// Called when a route cannot be matched by the router.
   final MaterialPageRoute Function(RouteSettings, RouteState) onUnknownRoute;
 
+  /// Global route behavior options applied to all routes unless overridden.
+  final RouteOptions defaultRouteOptions;
+
   /// Creates a new [GlobalRouteDefiner] instance.
   ///
   /// [initialRoute] and [title] are required.
@@ -51,5 +55,6 @@ class GlobalRouteDefiner {
     this.isAuthorized,
     this.unauthorizedBuilder,
     required this.onUnknownRoute,
+    this.defaultRouteOptions = const RouteOptions(),
   });
 }

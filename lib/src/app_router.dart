@@ -2,6 +2,7 @@
 
 import 'package:route_definer/src/global_route_definer.dart';
 import 'package:route_definer/src/route_definer.dart';
+import 'package:route_definer/src/route_options.dart';
 import 'package:route_definer/src/route_state.dart';
 import 'package:flutter/material.dart';
 
@@ -46,42 +47,59 @@ class AppRouter {
     final isNear = result.isNear;
 
     if (match == null) {
-      if (isNear) return null; // Possibly fallback handling outside
+      if (isNear) return null;
       return _globalDefiner.onUnknownRoute(settings, state);
     }
 
     final redirect = match.evaluateRedirect(state);
     if (redirect != null) {
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (context) {
-          final redirection = Navigator.popAndPushNamed(context, redirect);
-          if (_globalDefiner.onRedirect != null) {
-            return FutureBuilder(
-              future: redirection,
-              builder:
-                  (_, __) => const Center(child: CircularProgressIndicator()),
-            );
-          }
+      return _buildMaterialPageRoute(settings, (context) {
+        final redirection = Navigator.popAndPushNamed(context, redirect);
+        if (_globalDefiner.onRedirect != null) {
           return _globalDefiner.onRedirect!.call(state, redirect, redirection);
-        },
-      );
+        }
+        return const Center(child: CircularProgressIndicator());
+      }, match.options);
     }
 
     final isAuth =
         !match.requireAuthorization ||
         (_globalDefiner.isAuthorized?.call(state) ?? false);
+
     if (!isAuth && _globalDefiner.unauthorizedBuilder != null) {
-      return MaterialPageRoute(
-        settings: settings,
-        builder:
-            (context) => _globalDefiner.unauthorizedBuilder!(context, state),
+      return _buildMaterialPageRoute(
+        settings,
+        (ctx) => _globalDefiner.unauthorizedBuilder!(ctx, state),
+        match.options,
       );
     }
 
+    return _buildMaterialPageRoute(
+      settings,
+      (ctx) => match.builder(ctx, state),
+      match.options,
+    );
+  }
+
+  /// Builds a [MaterialPageRoute] using either the provided route options
+  /// or the global default options defined in [GlobalRouteDefiner].
+  ///
+  /// This method centralizes route creation logic to support consistent customization.
+  static MaterialPageRoute _buildMaterialPageRoute(
+    RouteSettings settings,
+    WidgetBuilder builder,
+    RouteOptions? localOptions,
+  ) {
+    final opts = _globalDefiner.defaultRouteOptions.merge(localOptions);
+
     return MaterialPageRoute(
       settings: settings,
-      builder: (ctx) => match.builder(ctx, state),
+      builder: builder,
+      maintainState: opts.maintainState ?? true,
+      fullscreenDialog: opts.fullscreenDialog ?? false,
+      allowSnapshotting: opts.allowSnapshotting ?? true,
+      barrierDismissible: opts.barrierDismissible ?? false,
+      requestFocus: opts.requestFocus,
     );
   }
 

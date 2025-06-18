@@ -28,14 +28,19 @@ class PasswordChangeProgressGuard extends RouteGuard {
   String? redirect(RouteState state) {
     final args = state.arguments;
     final emailPresent = args != null && args['email'] != null;
-    return (emailPresent || DummyUserPrefs.passwordChange != null) ? null : '/';
+    return (emailPresent || DummyUserPrefs.passwordChange != null)
+        ? null
+        : '/login';
   }
 }
 
 void main() {
   final mockRoutes = [
     RouteDefiner(path: '/', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/login', builder: (_, __) => const Placeholder()),
+    RouteDefiner(
+      path: '/login',
+      builder: (_, __) => const Scaffold(body: Text('Login')),
+    ),
     RouteDefiner(
       path: '/main',
       builder: (_, __) => const Placeholder(),
@@ -54,10 +59,17 @@ void main() {
     RouteDefiner(
       path: '/reset-by-email',
       builder: (_, __) => const Placeholder(),
+      guards: [PasswordChangeProgressGuard()],
     ),
     RouteDefiner(
       path: '/reset-by-pin',
       builder: (_, __) => const Placeholder(),
+      guards: [PasswordChangeProgressGuard()],
+    ),
+    RouteDefiner(
+      path: '/fullscreen',
+      builder: (_, __) => const Scaffold(body: Text('Fullscreen')),
+      options: const RouteOptions(fullscreenDialog: true),
     ),
     RouteDefiner(path: '/search', builder: (_, __) => const Placeholder()),
   ];
@@ -65,16 +77,72 @@ void main() {
   setUpAll(() {
     AppRouter.init(
       GlobalRouteDefiner(
-        initialRoute: '/',
+        initialRoute: '/login',
         title: 'Test App',
         isAuthorized: (state) => DummyUserPrefs.isAuthenticated,
         onUnknownRoute:
-            (settings, state) =>
-                MaterialPageRoute(builder: (context) => const Placeholder()),
-        unauthorizedBuilder: (context, state) => const Placeholder(),
+            (settings, state) => MaterialPageRoute(
+              builder: (_) => const Scaffold(body: Text('404')),
+              settings: settings,
+            ),
+        unauthorizedBuilder:
+            (context, state) => const Scaffold(body: Text('Unauthorized')),
+        defaultRouteOptions: const RouteOptions(
+          fullscreenDialog: false,
+          maintainState: false,
+          allowSnapshotting: false,
+          barrierDismissible: true,
+          requestFocus: false,
+        ),
       ),
       mockRoutes,
     );
+  });
+
+  group('AppRouter', () {
+    Future<void> pumpRoute(WidgetTester tester, String route) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: AppRouter.onGenerateRoute,
+          onUnknownRoute: AppRouter.onUnknownRoute,
+          initialRoute: route,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('Applies global RouteOptions by default', (tester) async {
+      await pumpRoute(tester, '/login');
+      final route = ModalRoute.of(tester.element(find.text('Login')));
+      expect(route, isA<MaterialPageRoute>());
+
+      final pageRoute = route as MaterialPageRoute;
+      expect(pageRoute.maintainState, false);
+      expect(pageRoute.fullscreenDialog, false);
+      expect(pageRoute.allowSnapshotting, false);
+      expect(pageRoute.barrierDismissible, true);
+    });
+
+    testWidgets('Overrides global options with local RouteOptions', (
+      tester,
+    ) async {
+      await pumpRoute(tester, '/fullscreen');
+      final route = ModalRoute.of(tester.element(find.text('Fullscreen')));
+      expect(route, isA<MaterialPageRoute>());
+
+      final pageRoute = route as MaterialPageRoute;
+      expect(pageRoute.fullscreenDialog, true);
+    });
+
+    testWidgets('Handles unknown route with fallback', (tester) async {
+      await pumpRoute(tester, '/unknown');
+      expect(find.text('404'), findsOneWidget);
+    });
+
+    testWidgets('Handles unauthorized route access', (tester) async {
+      await pumpRoute(tester, '/main');
+      expect(find.text('Unauthorized'), findsOneWidget);
+    });
   });
 
   group('RouteGuard tests', () {
@@ -105,7 +173,7 @@ void main() {
         DummyUserPrefs.isAuthenticated = true;
         final guard = AuthenticatedRedirectGuard();
         final state = RouteState(
-          path: '/',
+          path: AppRouter.initialRoute,
           queryParams: {},
           fragment: '',
           arguments: null,
@@ -160,7 +228,7 @@ void main() {
           fragment: '',
           arguments: {},
         );
-        expect(guard.redirect(state), '/');
+        expect(guard.redirect(state), AppRouter.initialRoute);
       });
     });
   });

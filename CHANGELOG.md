@@ -17,3 +17,16 @@
 
 ## [1.0.2] - Add example
 - Add example
+
+## [1.1.0] - 2025-06-18
+
+### Added
+- `RouteOptions.merge()` method to allow merging specific route options with global defaults.
+- Documentation for `RouteOptions` fields and the `merge()` method for clarity and usability.
+
+### Changed
+- Updated GitHub Actions to auto-publish to pub.dev when pushing a version tag (e.g., `v1.2.3`).
+- Added basic permission checking in CI workflow to restrict who can push tags (manual check using `github.actor`).
+
+### Fixed
+- Improved test coverage and organization of `AppRouter` and guard logic.
