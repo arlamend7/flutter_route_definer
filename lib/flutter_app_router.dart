@@ -1,4 +1,4 @@
-library app_router;
+library flutter_app_router;
 
 export 'src/app_router.dart';
 export 'src/route_definer.dart';

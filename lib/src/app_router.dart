@@ -1,8 +1,8 @@
-// lib/app_router.dart
+// lib/flutter_app_router.dart
 
-import 'package:app_router/src/global_route_definer.dart';
-import 'package:app_router/src/route_definer.dart';
-import 'package:app_router/src/route_state.dart';
+import 'package:flutter_app_router/src/global_route_definer.dart';
+import 'package:flutter_app_router/src/route_definer.dart';
+import 'package:flutter_app_router/src/route_state.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {

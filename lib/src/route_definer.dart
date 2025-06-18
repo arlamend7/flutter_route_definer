@@ -1,5 +1,5 @@
-import 'package:app_router/src/route_guard.dart';
-import 'package:app_router/src/route_state.dart';
+import 'package:flutter_app_router/src/route_guard.dart';
+import 'package:flutter_app_router/src/route_state.dart';
 import 'package:flutter/material.dart';
 
 class RouteDefiner {
@@ -8,12 +8,7 @@ class RouteDefiner {
   final bool requireAuthorization;
   final List<RouteGuard> guards;
 
-  RouteDefiner({
-    required this.path,
-    required this.builder,
-    this.requireAuthorization = false,
-    this.guards = const [],
-  });
+  RouteDefiner({required this.path, required this.builder, this.requireAuthorization = false, this.guards = const []});
 
   String? evaluateRedirect(RouteState state) {
     for (final guard in guards) {
