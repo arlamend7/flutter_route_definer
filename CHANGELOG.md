@@ -14,3 +14,6 @@
 - Ran `dart format .` to ensure consistent code formatting.
 - Resolved all issues and warnings reported by `flutter analyze`.
 - Ensured `dart pub publish --dry-run` passes without errors or warnings.
+
+## [1.0.2] - Add example
+- Add example

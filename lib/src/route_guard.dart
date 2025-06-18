@@ -3,6 +3,9 @@ import 'package:route_definer/src/route_state.dart';
 /// Interface for defining route guards that control access or
 /// redirect based on the current route state.
 abstract class RouteGuard {
+  /// Creates a [RouteGuard].
+  const RouteGuard();
+
   /// Determines if navigation to a route should be redirected.
   ///
   /// Returns a redirect path as a [String] if access is blocked,
