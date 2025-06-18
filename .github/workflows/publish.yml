@@ -2,14 +2,13 @@ name: Publish to pub.dev
 
 on:
   push:
-    # Branch trigger: release/v1.2.3, release/v2.0.0, etc.
-    branches:
-      - 'release/v[0-9]+.[0-9]+.[0-9]+*'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   publish:
     permissions:
-      id-token: write  # Required for pub.dev OIDC authentication
+      id-token: write # Required for authentication using OIDC
     uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
-    with:
-      working-directory: .  # Adjust if your package is in a subdirectory
+    # with:
+    #   working-directory: path/to/package/within/repository
