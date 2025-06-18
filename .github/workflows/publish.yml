@@ -48,4 +48,7 @@ jobs:
       - name: Publish to pub.dev
         env:
           PUB_DEV_CREDENTIALS: ${{ secrets.PUB_DEV_CREDENTIALS }}
-        run: flutter pub publish --force
+        run: |
+          echo "$PUB_DEV_CREDENTIALS" | base64 --decode > ~/.pub-cache/credentials.json
+          flutter pub publish --force
+
