@@ -1,8 +1,8 @@
-// test/flutter_app_router_test.dart
+// test/route_definer_test.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app_router/flutter_app_router.dart';
+import 'package:route_definer/route_definer.dart';
 
 class DummyGuard implements RouteGuard {
   final bool allow;

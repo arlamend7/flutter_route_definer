@@ -1,5 +1,5 @@
-import 'package:flutter_app_router/src/route_guard.dart';
-import 'package:flutter_app_router/src/route_state.dart';
+import 'package:route_definer/src/route_guard.dart';
+import 'package:route_definer/src/route_state.dart';
 import 'package:flutter/material.dart';
 
 class RouteDefiner {
