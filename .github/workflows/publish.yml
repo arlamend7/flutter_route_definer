@@ -1,53 +1,15 @@
-name: Publish to pub.devMore actions
+name: Publish to pub.dev
 
 on:
   push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+' # triggers on tags like v1.2.3
+    # Branch trigger: release/v1.2.3, release/v2.0.0, etc.
+    branches:
+      - 'release/v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-
-      - name: Extract version from tag
-        id: extract_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-
-      - name: Update version in pubspec.yaml
-        run: |
-          sed -i "s/^version: .*/version: $VERSION/" pubspec.yaml
-          echo "Updated version to $VERSION"
-          cat pubspec.yaml
-
-      - name: Format Dart code
-        run: dart format .
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Run tests
-        run: flutter test
-
-      - name: Decode pub.dev credentials
-        run: |
-          mkdir -p ~/.pub-cache
-          echo "${{ secrets.PUB_DEV_CREDENTIALS }}" | base64 --decode > ~/dart\pub-credentials.json
-
-      - name: Publish to pub.dev
-        env:
-          PUB_DEV_CREDENTIALS: ${{ secrets.PUB_DEV_CREDENTIALS }}
-        run: |
-          echo "$PUB_DEV_CREDENTIALS" | base64 --decode > ~/dart\pub-credentials.json
-          flutter pub publish --force
+      id-token: write  # Required for pub.dev OIDC authentication
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      working-directory: .  # Adjust if your package is in a subdirectory
