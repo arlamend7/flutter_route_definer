@@ -1,6 +1,5 @@
 import 'package:route_definer/route_definer.dart';
 import 'package:flutter/material.dart';
-import 'package:route_definer/src/route_options.dart';
 
 /// Defines global route-related settings and behaviors for the app router.
 ///
