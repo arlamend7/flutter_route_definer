@@ -1,4 +1,11 @@
 include: package:flutter_lints/flutter.yaml
 
+linter:
+  rules:
+    always_use_package_imports: true
+    avoid_print: true
+    prefer_final_locals: true
+    unnecessary_this: true
+
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

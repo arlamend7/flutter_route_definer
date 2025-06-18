@@ -53,12 +53,11 @@ class AppRouter {
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {
-          var redirection = Navigator.popAndPushNamed(context, redirect);
+          final redirection = Navigator.popAndPushNamed(context, redirect);
           if (_globalDefiner.onRedirect != null) {
             return FutureBuilder(
               future: redirection,
-              builder:
-                  (_, __) => const Center(child: CircularProgressIndicator()),
+              builder: (_, __) => const Center(child: CircularProgressIndicator()),
             );
           }
           return _globalDefiner.onRedirect!.call(state, redirect, redirection);
@@ -66,21 +65,15 @@ class AppRouter {
       );
     }
 
-    final isAuth =
-        !match.requireAuthorization ||
-        (_globalDefiner.isAuthorized?.call(state) ?? false);
+    final isAuth = !match.requireAuthorization || (_globalDefiner.isAuthorized?.call(state) ?? false);
     if (!isAuth && _globalDefiner.unauthorizedBuilder != null) {
       return MaterialPageRoute(
         settings: settings,
-        builder:
-            (context) => _globalDefiner.unauthorizedBuilder!(context, state),
+        builder: (context) => _globalDefiner.unauthorizedBuilder!(context, state),
       );
     }
 
-    return MaterialPageRoute(
-      settings: settings,
-      builder: (ctx) => match.builder(ctx, state),
-    );
+    return MaterialPageRoute(settings: settings, builder: (ctx) => match.builder(ctx, state));
   }
 
   /// Handles unknown routes (e.g., 404) based on [RouteSettings].
@@ -93,10 +86,7 @@ class AppRouter {
 
   /// Builds a [RouteState] object from [RouteSettings], parsing path, query parameters, fragment, and arguments.
   static RouteState buildRouteState(RouteSettings settings) {
-    final routeName =
-        settings.name?.isNotEmpty == true
-            ? settings.name!
-            : _globalDefiner.initialRoute;
+    final routeName = settings.name?.isNotEmpty == true ? settings.name! : _globalDefiner.initialRoute;
     final uri = Uri.parse(routeName);
     return RouteState(
       path: uri.path,
@@ -124,10 +114,7 @@ class AppRouter {
   /// For example, pattern '/user/:id' and actual '/user/42' returns {'id': '42'}.
   /// Returns null if the actual path does not match the pattern.
   static Map<String, String>? extractPathParams(String pattern, String actual) {
-    final regExpPattern = pattern.replaceAllMapped(
-      RegExp(r':(\w+)'),
-      (match) => '(?<${match[1]}>[\\w-]+)',
-    );
+    final regExpPattern = pattern.replaceAllMapped(RegExp(r':(\w+)'), (match) => '(?<${match[1]}>[\\w-]+)');
     final regExp = RegExp('^$regExpPattern\$');
     final match = regExp.firstMatch(actual);
     if (match == null) return null;
@@ -146,9 +133,7 @@ class AppRouter {
   /// Analyzes [RouteSettings] by building the [RouteState] and matching it against routes.
   ///
   /// Returns a tuple containing the route state, the matched route (if any), and whether the match is near.
-  static ({RouteState state, RouteDefiner? match, bool isNear}) analyzeRoute(
-    RouteSettings settings,
-  ) {
+  static ({RouteState state, RouteDefiner? match, bool isNear}) analyzeRoute(RouteSettings settings) {
     final state = buildRouteState(settings);
     final (match, isNear) = matchRoute(state.path);
     if (match != null) {
