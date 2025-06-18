@@ -1,0 +1,45 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+' # triggers on tags like v1.2.3
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write 
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: Extract version from tag
+        id: extract_version
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Update pubspec.yaml version
+        run: |
+          # Use yq or sed to update version in pubspec.yaml
+          # Here we use sed for simplicity:
+          sed -i "s/^version: .*/version: $VERSION/" pubspec.yaml
+          cat pubspec.yaml
+
+      - name: Format Dart code
+        run: dart format .
+
+      - name: Get dependencies
+        run: dart pub get
+
+      - name: Run tests
+        run: dart test
+
+      - name: Publish to pub.dev
+        env:
+          PUB_DEV_TOKEN: ${{ secrets.PUB_DEV_CREDENTIALS }}
+        run: dart pub publish --force
