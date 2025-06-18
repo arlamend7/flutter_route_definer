@@ -9,25 +9,26 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write 
+      id-token: write
       contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Dart SDK
-        uses: dart-lang/setup-dart@v1
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.34.2'
 
       - name: Extract version from tag
         id: extract_version
-        run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
-      - name: Update pubspec.yaml version
+      - name: Update version in pubspec.yaml
         run: |
-          # Use yq or sed to update version in pubspec.yaml
-          # Here we use sed for simplicity:
           sed -i "s/^version: .*/version: $VERSION/" pubspec.yaml
+          echo "Updated version to $VERSION"
           cat pubspec.yaml
 
       - name: Format Dart code
@@ -41,5 +42,7 @@ jobs:
 
       - name: Publish to pub.dev
         env:
-          PUB_DEV_TOKEN: ${{ secrets.PUB_DEV_CREDENTIALS }}
-        run: flutter pub publish --force
+          PUB_DEV_CREDENTIALS: ${{ secrets.PUB_DEV_CREDENTIALS }}
+        run: |
+          echo "$PUB_DEV_CREDENTIALS" | base64 --decode > ~/.pub-cache/credentials.json
+          flutter pub publish --force
