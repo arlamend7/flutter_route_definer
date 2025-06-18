@@ -27,7 +27,8 @@ jobs:
 
       - name: Publish to pub.dev
         run: |
-          echo "${{ secrets.PUB_DEV_CREDENTIALS }}" | base64 --decode > ~/.pub-cache/credentials.json
+          mkdir -p ~/.pub-cache
+          echo "${{ secrets.PUB_DEV_CREDENTIALS }}" > ~/.pub-cache/pub-credentials.json
           flutter pub publish -f
         env:
           PUB_ENVIRONMENT: github-action
