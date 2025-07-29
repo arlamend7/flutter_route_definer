@@ -33,7 +33,7 @@ jobs:
       run: dart doc --output docs
 
     - name: Upload documentation to GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v2
+      uses: actions/upload-pages-artifact@v3
       with:
         path: docs
 
