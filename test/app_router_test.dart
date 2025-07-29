@@ -80,13 +80,12 @@ void main() {
         initialRoute: '/login',
         title: 'Test App',
         isAuthorized: (state) => DummyUserPrefs.isAuthenticated,
-        onUnknownRoute:
-            (settings, state) => MaterialPageRoute(
-              builder: (_) => const Scaffold(body: Text('404')),
-              settings: settings,
-            ),
-        unauthorizedBuilder:
-            (context, state) => const Scaffold(body: Text('Unauthorized')),
+        onUnknownRoute: (settings, state) => MaterialPageRoute(
+          builder: (_) => const Scaffold(body: Text('404')),
+          settings: settings,
+        ),
+        unauthorizedBuilder: (context, state) =>
+            const Scaffold(body: Text('Unauthorized')),
         defaultRouteOptions: const RouteOptions(
           fullscreenDialog: false,
           maintainState: false,

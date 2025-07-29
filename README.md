@@ -1,201 +1,89 @@
-# AppRouter for Flutter
+# AppRouter
 
-**AppRouter** is a flexible and scalable routing system for Flutter, inspired by Angular and Express.js. It supports route parameters, guards, redirects, and authentication control, making it suitable for complex and modular Flutter applications.
+A lightweight, declarative routing package for Flutter, inspired by Angular and Express.js. AppRouter enables flexible navigation with guards, dynamic path matching, argument extraction, and testable logic — all with a minimal footprint.
 
-## Overview
+## Documentation
+
+Official API documentation is available at:
+
+[route_definer library](https://arlamend7.github.io/flutter_route_definer/route_definer/)
+
+## When to Use AppRouter
 
 AppRouter is particularly useful for:
 
 - Applications with complex navigation flows or conditional access
 - Modular projects requiring isolated and reusable route definitions
-- Maintaining a declarative and testable route structure
+- Projects that benefit from a declarative and testable route structure
 
 Its accompanying test suite ensures:
 
-- Navigation guards work as expected, blocking or allowing access
-- Path parsing is reliable across path, query, and fragment variants
-- Dynamic path segments are accurately extracted and matched
+- Guards work as expected (allow/deny navigation)  
+- Path parsing is reliable (path, query, fragment)  
+- Dynamic segments are accurately matched and extracted
 
----
+## Features
+
+AppRouter offers essential features to support complex navigation flows:
+
+- Lightweight and framework-agnostic  
+  Designed to be simple, fast, and easy to integrate or test.
+
+- Express-style path and query parsing  
+  Easily match and extract segments like `/user/:id/post/:postId`.
+
+- Navigation guards with redirect support  
+  Redirect based on conditions such as authentication or user state.
+
+- Route-level configuration and metadata  
+  Define route-specific behaviors such as full-screen dialogs and guards.
+
+- Route introspection with `RouteState`  
+  Access route path, parameters, query string, fragment, and arguments.
+
+- Fallback and unknown route handling  
+  Customize 404 screens or handle unmatched routes programmatically.
+
 
 ## Motivation
 
-Routing systems in frameworks such as Angular and Express.js provide robust support for dynamic paths (`/user/:id`, `/post/:postId`), redirection, authentication, and guard logic. AppRouter brings these capabilities to Flutter with:
+Routing systems like Angular and Express.js offer robust navigation features: dynamic segments, guards, redirection, and separation of logic.
 
-- Express-style dynamic path matching
-- Angular-style navigation guards (`canActivate`, `canRedirect`)
-- Clear separation between route definitions and views
-- Easy-to-mock, testable routing logic
+AppRouter brings these capabilities natively to Flutter:
 
----
+- Express-style dynamic path matching  
+- Angular-style navigation guards (`canActivate`, `canRedirect`)  
+- Separation between route definition and view building  
+- Easy-to-mock, test-friendly routing logic
 
-## Getting Started
 
-### Example Setup
+## RouteState Breakdown
 
-```dart
-// Guards
-class AuthenticatedRedirectGuard extends RouteGuard {
-  @override
-  String? redirect(RouteState state) {
-    return AuthenticationService().isAuthenticated ? null : '/main';
-  }
-}
+The `RouteState` object gives full introspection of the current route:
 
-class PasswordChangeProgressGuard extends RouteGuard {
-  @override
-  String? redirect(RouteState state) {
-    return state.arguments?["email"] != null ? null : '/login';
-  }
-}
+| Property      | Description                                 |
+|---------------|---------------------------------------------|
+| `path`        | Raw route path (e.g., `/user/42/post/10`)   |
+| `uriParams`   | Extracted parameters (`id`, `postId`, etc.) |
+| `queryParams` | Query string values (`?sort=asc`)           |
+| `fragment`    | Hash fragment (e.g., `#top`)                |
+| `arguments`   | Extra arguments passed via navigation       |
 
-// Route list
-final mockRoutes = [
-    RouteDefiner(
-        path: "/login",
-        builder: (context, state) => LoginView(
-        model: LoginViewModel(
-            context: context,
-            email: state.arguments?.email as String?,
-            password: state.arguments?.password as String?,
-            redirectUrl: state.queryParams['redirectUrl'],
-        ),
-        ),
-        guards: [AuthenticatedRedirectGuard()],
-    ),
-    RouteDefiner(path: '/main', builder: (_, __) => const Placeholder(), requireAuthorization: true),
-    RouteDefiner(path: '/article/:id', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/user/:id', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/user/:id/post/:postId', builder: (_, __) => const Placeholder()),
-    RouteDefiner(path: '/settings/:section', builder: (_, __) => const Placeholder()),
-    RouteDefiner(
-        path: '/reset-password',
-        builder: (_, state) => PasswordChangeView(email: state.arguments!["email"]),
-        guards: [PasswordChangeProgressGuard()],
-        options: const RouteOptions(fullscreenDialog: true),
-    ),
-    RouteDefiner(path: '/search', builder: (_, __) => const Placeholder()),
-];
 
-void main() {
-  AppRouter.init(
-    GlobalRouteDefiner(
-      initialRoute: '/login',
-      title: 'Test App',
-      isAuthorized: (state) => DummyUserPrefs.isAuthenticated,
-      onUnknownRoute: (settings, state) => MaterialPageRoute(builder: (_) => const Scaffold(body: Text("404 Not Found"))),
-      unauthorizedBuilder: (_, __) => const Scaffold(body: Text("Unauthorized")),
-      defaultRouteOptions: const RouteOptions(
-        fullscreenDialog: false,
-        maintainState: false,
-        allowSnapshotting: false,
-        barrierDismissible: true,
-        requestFocus: false,
-      ),
-    ),
-    mockRoutes,
-  );
+## Migration Guides
 
-  runApp(MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+## Changelog
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppRouter.title,
-      initialRoute: AppRouter.initialRoute,
-      onGenerateRoute: AppRouter.onGenerateRoute,
-      onUnknownRoute: AppRouter.onUnknownRoute,
-    );
-  }
-}
-```
+See [`CHANGELOG.md`](https://pub.dev/packages/route_definer/example) for a full list of updates, features, and breaking changes.
 
----
+## Roadmap
 
-## 1. RouteGuard Testing
+AppRouter is currently considered stable and production-ready. However, we continue to evaluate new features based on developer feedback and common use cases. Our goal is to make the system more modular and allow additional customization per route when needed. Future decisions and evolutions will be guided by demand and comparisons with other mature routing systems such as Angular Router, .NET routing, and Java frameworks. Improvements will be gradual and driven by practical needs rather than complexity, maintaining the lightweight and intuitive nature of the package.
 
-### Example: DummyGuard
 
-```dart
-class DummyGuard implements RouteGuard {
-  final bool allow;
-  DummyGuard(this.allow);
+## Triage & Contributing
 
-  @override
-  String? redirect(RouteState state) => allow ? null : '/login';
-}
-```
-
-This guard simulates simple authorization behavior:
-
-- If `allow` is `true`, navigation is permitted.
-- If `false`, the user is redirected to `/login`.
-
-### Tested Scenarios
-
-- Navigation allowed based on condition
-- Navigation blocked and redirected appropriately
-
----
-
-## 2. RouteState Breakdown
-
-The `RouteState` class provides detailed information about the current route:
-
-- `path`: Raw route path (e.g., `/user/42/post/10`)
-- `uriParams`: Extracted path parameters (e.g., `id`, `postId`)
-- `queryParams`: Parsed query string (e.g., `?sort=asc`)
-- `fragment`: Hash fragment (e.g., `#top`)
-- `arguments`: Additional navigation arguments
-- `match`: Whether the route matched exactly
-- `isNear`: Whether the route was a near match
-
-Example URLs tested include:
-
-- Path-only routes
-- Routes with query strings
-- Routes with fragments
-- Combined formats such as `/user/42/post/10?sort=desc#top`
-
----
-
-## 3. Route Matching API
-
-### AppRouter Interface
-
-```dart
-class AppRouter {
-  static void init(GlobalRouteDefiner definer, List<RouteDefiner> routes);
-  static Route<dynamic>? onGenerateRoute(RouteSettings settings);
-  static Route<dynamic>? onUnknownRoute(RouteSettings settings);
-  static String get initialRoute;
-  static String get title;
-  static (RouteDefiner?, bool) matchRoute(String path);
-  static Map<String, String>? extractPathParams(String pattern, String path);
-  static bool isNearMatch(String pattern, String path);
-  static ({RouteState state, RouteDefiner? match, bool isNear}) analyzeRoute(RouteSettings settings);
-  static RouteState buildRouteState(RouteSettings settings);
-}
-```
-
-### Function Descriptions
-
-- `init(...)`: Initializes the router with global configuration and route definitions.
-- `onGenerateRoute(...)`: Builds the appropriate route based on path matching.
-- `onUnknownRoute(...)`: Called when no route is found.
-- `initialRoute`, `title`: Provide access to globally defined values.
-- `matchRoute(...)`: Attempts to find a matching route for a given path.
-- `extractPathParams(...)`: Parses dynamic segments from a path (e.g., `:id`).
-- `isNearMatch(...)`: Indicates if the path is almost matching a route, useful for fallback logic.
-- `analyzeRoute(...)`: Provides a comprehensive analysis of a route from settings.
-- `buildRouteState(...)`: Constructs a full `RouteState` object from `RouteSettings`.
-
----
-
-## Conclusion
-
-AppRouter draws from the best practices of Angular and Express.js but is built natively for Flutter. It provides robust, declarative routing suitable for applications that require authentication, path guards, and modular route handling. With built-in testability and separation of concerns, it’s ideal for both small and large-scale Flutter projects.
+AppRouter uses issue priorities similar to Flutter: `P0`, `P1`, `P2`, `P3`.  
+To report bugs or suggest features, visit the [GitHub Issues](https://github.com/arlamend7/flutter_route_definer/issues).  
+We welcome contributions via pull requests or discussions!

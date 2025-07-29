@@ -7,12 +7,11 @@ void main() {
       initialRoute: '/',
       title: 'Route Example',
       isAuthorized: (_) => true,
-      unauthorizedBuilder:
-          (_, __) => const Scaffold(body: Center(child: Text("Unauthorized"))),
-      onUnknownRoute:
-          (_, __) => MaterialPageRoute(
-            builder: (_) => const Scaffold(body: Text("404")),
-          ),
+      unauthorizedBuilder: (_, __) =>
+          const Scaffold(body: Center(child: Text("Unauthorized"))),
+      onUnknownRoute: (_, __) => MaterialPageRoute(
+        builder: (_) => const Scaffold(body: Text("404")),
+      ),
     ),
     [
       RouteDefiner(path: '/', builder: (_, __) => const HomePage()),

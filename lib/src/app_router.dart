@@ -62,8 +62,7 @@ class AppRouter {
       }, match.options);
     }
 
-    final isAuth =
-        !match.requireAuthorization ||
+    final isAuth = !match.requireAuthorization ||
         (_globalDefiner.isAuthorized?.call(state) ?? false);
 
     if (!isAuth && _globalDefiner.unauthorizedBuilder != null) {
@@ -113,10 +112,9 @@ class AppRouter {
 
   /// Builds a [RouteState] object from [RouteSettings], parsing path, query parameters, fragment, and arguments.
   static RouteState buildRouteState(RouteSettings settings) {
-    final routeName =
-        settings.name?.isNotEmpty == true
-            ? settings.name!
-            : _globalDefiner.initialRoute;
+    final routeName = settings.name?.isNotEmpty == true
+        ? settings.name!
+        : _globalDefiner.initialRoute;
     final uri = Uri.parse(routeName);
     return RouteState(
       path: uri.path,
