@@ -30,3 +30,8 @@
 
 ### Fixed
 - Improved test coverage and organization of `AppRouter` and guard logic.
+
+## [1.2.0] - 2025-06-18
+- Lowered SDK version requirement for better compatibility
+- Updated overall project documentation
+- Added comprehensive API documentation for the library
