@@ -4,6 +4,7 @@ version: 1.2.0
 homepage: https://github.com/arlamend7/flutter_route_definer
 repository: https://github.com/arlamend7/flutter_route_definer
 issue_tracker: https://github.com/arlamend7/flutter_route_definer/issues
+documentation: https://arlamend7.github.io/flutter_route_definer
 license: MIT
 example: example/main.dart
 

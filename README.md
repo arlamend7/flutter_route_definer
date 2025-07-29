@@ -44,7 +44,6 @@ AppRouter offers essential features to support complex navigation flows:
 - Fallback and unknown route handling  
   Customize 404 screens or handle unmatched routes programmatically.
 
-
 ## Motivation
 
 Routing systems like Angular and Express.js offer robust navigation features: dynamic segments, guards, redirection, and separation of logic.
@@ -75,7 +74,7 @@ The `RouteState` object gives full introspection of the current route:
 
 ## Changelog
 
-See [`CHANGELOG.md`](https://pub.dev/packages/route_definer/example) for a full list of updates, features, and breaking changes.
+See [`CHANGELOG.md`](https://pub.dev/packages/route_definer/changelog) for a full list of updates, features, and breaking changes.
 
 ## Roadmap
 
