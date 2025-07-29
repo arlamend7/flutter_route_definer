@@ -1,11 +1,11 @@
-name: Deploy Dart API Docs to GitHub Pages
+name: Deploy Flutter API Docs to GitHub Pages
 
 on:
   push:
-    branches: [master]  # Ou outra branch que você usa
+    branches: [master]
 
 permissions:
-  contents: write  # Permite publicar no gh-pages
+  contents: write
 
 jobs:
   deploy:
@@ -15,13 +15,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Setup Dart
-      uses: dart-lang/setup-dart@v1
-
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.13.6'  
+        
     - name: Install dependencies
-      run: dart pub get
+      run: flutter pub get
 
-    - name: Generate documentation
+    - name: Generate API documentation
       run: dart doc --output doc/api
 
     - name: Deploy to GitHub Pages
