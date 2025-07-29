@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="route_definer API docs, for the Dart programming language.">
+  <title>route_definer - Dart API docs</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="static-assets/github.css?v1">
+  <link rel="stylesheet" href="static-assets/styles.css?v1">
+  <link rel="icon" href="static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="https://github.com/arlamend7/flutter_route_definer">route_definer package</a></li>
+  </ol>
+  <div class="self-name">route_definer</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div id="dartdoc-main-content" class="main-content">
+      
+<section class="desc markdown">
+  <h1 id="approuter-for-flutter">AppRouter for Flutter</h1>
+<p><strong>AppRouter</strong> is a flexible and scalable routing system for Flutter, inspired by Angular and Express.js. It supports route parameters, guards, redirects, and authentication control, making it suitable for complex and modular Flutter applications.</p>
+<h2 id="overview">Overview</h2>
+<p>AppRouter is particularly useful for:</p>
+<ul>
+<li>Applications with complex navigation flows or conditional access</li>
+<li>Modular projects requiring isolated and reusable route definitions</li>
+<li>Maintaining a declarative and testable route structure</li>
+</ul>
+<p>Its accompanying test suite ensures:</p>
+<ul>
+<li>Navigation guards work as expected, blocking or allowing access</li>
+<li>Path parsing is reliable across path, query, and fragment variants</li>
+<li>Dynamic path segments are accurately extracted and matched</li>
+</ul>
+<hr>
+<h2 id="motivation">Motivation</h2>
+<p>Routing systems in frameworks such as Angular and Express.js provide robust support for dynamic paths (<code>/user/:id</code>, <code>/post/:postId</code>), redirection, authentication, and guard logic. AppRouter brings these capabilities to Flutter with:</p>
+<ul>
+<li>Express-style dynamic path matching</li>
+<li>Angular-style navigation guards (<code>canActivate</code>, <code>canRedirect</code>)</li>
+<li>Clear separation between route definitions and views</li>
+<li>Easy-to-mock, testable routing logic</li>
+</ul>
+<hr>
+<h2 id="getting-started">Getting Started</h2>
+<h3 id="example-setup">Example Setup</h3>
+<pre class="language-dart"><code class="language-dart">// Guards
+class AuthenticatedRedirectGuard extends RouteGuard {
+  @override
+  String? redirect(RouteState state) {
+    return AuthenticationService().isAuthenticated ? null : '/main';
+  }
+}
+
+class PasswordChangeProgressGuard extends RouteGuard {
+  @override
+  String? redirect(RouteState state) {
+    return state.arguments?["email"] != null ? null : '/login';
+  }
+}
+
+// Route list
+final mockRoutes = [
+    RouteDefiner(
+        path: "/login",
+        builder: (context, state) =&gt; LoginView(
+        model: LoginViewModel(
+            context: context,
+            email: state.arguments?.email as String?,
+            password: state.arguments?.password as String?,
+            redirectUrl: state.queryParams['redirectUrl'],
+        ),
+        ),
+        guards: [AuthenticatedRedirectGuard()],
+    ),
+    RouteDefiner(path: '/main', builder: (_, __) =&gt; const Placeholder(), requireAuthorization: true),
+    RouteDefiner(path: '/article/:id', builder: (_, __) =&gt; const Placeholder()),
+    RouteDefiner(path: '/user/:id', builder: (_, __) =&gt; const Placeholder()),
+    RouteDefiner(path: '/user/:id/post/:postId', builder: (_, __) =&gt; const Placeholder()),
+    RouteDefiner(path: '/settings/:section', builder: (_, __) =&gt; const Placeholder()),
+    RouteDefiner(
+        path: '/reset-password',
+        builder: (_, state) =&gt; PasswordChangeView(email: state.arguments!["email"]),
+        guards: [PasswordChangeProgressGuard()],
+        options: const RouteOptions(fullscreenDialog: true),
+    ),
+    RouteDefiner(path: '/search', builder: (_, __) =&gt; const Placeholder()),
+];
+
+void main() {
+  AppRouter.init(
+    GlobalRouteDefiner(
+      initialRoute: '/login',
+      title: 'Test App',
+      isAuthorized: (state) =&gt; DummyUserPrefs.isAuthenticated,
+      onUnknownRoute: (settings, state) =&gt; MaterialPageRoute(builder: (_) =&gt; const Scaffold(body: Text("404 Not Found"))),
+      unauthorizedBuilder: (_, __) =&gt; const Scaffold(body: Text("Unauthorized")),
+      defaultRouteOptions: const RouteOptions(
+        fullscreenDialog: false,
+        maintainState: false,
+        allowSnapshotting: false,
+        barrierDismissible: true,
+        requestFocus: false,
+      ),
+    ),
+    mockRoutes,
+  );
+
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: AppRouter.title,
+      initialRoute: AppRouter.initialRoute,
+      onGenerateRoute: AppRouter.onGenerateRoute,
+      onUnknownRoute: AppRouter.onUnknownRoute,
+    );
+  }
+}
+</code></pre>
+<hr>
+<h2 id="1-routeguard-testing">1. RouteGuard Testing</h2>
+<h3 id="example-dummyguard">Example: DummyGuard</h3>
+<pre class="language-dart"><code class="language-dart">class DummyGuard implements RouteGuard {
+  final bool allow;
+  DummyGuard(this.allow);
+
+  @override
+  String? redirect(RouteState state) =&gt; allow ? null : '/login';
+}
+</code></pre>
+<p>This guard simulates simple authorization behavior:</p>
+<ul>
+<li>If <code>allow</code> is <code>true</code>, navigation is permitted.</li>
+<li>If <code>false</code>, the user is redirected to <code>/login</code>.</li>
+</ul>
+<h3 id="tested-scenarios">Tested Scenarios</h3>
+<ul>
+<li>Navigation allowed based on condition</li>
+<li>Navigation blocked and redirected appropriately</li>
+</ul>
+<hr>
+<h2 id="2-routestate-breakdown">2. RouteState Breakdown</h2>
+<p>The <code>RouteState</code> class provides detailed information about the current route:</p>
+<ul>
+<li><code>path</code>: Raw route path (e.g., <code>/user/42/post/10</code>)</li>
+<li><code>uriParams</code>: Extracted path parameters (e.g., <code>id</code>, <code>postId</code>)</li>
+<li><code>queryParams</code>: Parsed query string (e.g., <code>?sort=asc</code>)</li>
+<li><code>fragment</code>: Hash fragment (e.g., <code>#top</code>)</li>
+<li><code>arguments</code>: Additional navigation arguments</li>
+<li><code>match</code>: Whether the route matched exactly</li>
+<li><code>isNear</code>: Whether the route was a near match</li>
+</ul>
+<p>Example URLs tested include:</p>
+<ul>
+<li>Path-only routes</li>
+<li>Routes with query strings</li>
+<li>Routes with fragments</li>
+<li>Combined formats such as <code>/user/42/post/10?sort=desc#top</code></li>
+</ul>
+<hr>
+<h2 id="3-route-matching-api">3. Route Matching API</h2>
+<h3 id="approuter-interface">AppRouter Interface</h3>
+<pre class="language-dart"><code class="language-dart">class AppRouter {
+  static void init(GlobalRouteDefiner definer, List&lt;RouteDefiner&gt; routes);
+  static Route&lt;dynamic&gt;? onGenerateRoute(RouteSettings settings);
+  static Route&lt;dynamic&gt;? onUnknownRoute(RouteSettings settings);
+  static String get initialRoute;
+  static String get title;
+  static (RouteDefiner?, bool) matchRoute(String path);
+  static Map&lt;String, String&gt;? extractPathParams(String pattern, String path);
+  static bool isNearMatch(String pattern, String path);
+  static ({RouteState state, RouteDefiner? match, bool isNear}) analyzeRoute(RouteSettings settings);
+  static RouteState buildRouteState(RouteSettings settings);
+}
+</code></pre>
+<h3 id="function-descriptions">Function Descriptions</h3>
+<ul>
+<li><code>init(...)</code>: Initializes the router with global configuration and route definitions.</li>
+<li><code>onGenerateRoute(...)</code>: Builds the appropriate route based on path matching.</li>
+<li><code>onUnknownRoute(...)</code>: Called when no route is found.</li>
+<li><code>initialRoute</code>, <code>title</code>: Provide access to globally defined values.</li>
+<li><code>matchRoute(...)</code>: Attempts to find a matching route for a given path.</li>
+<li><code>extractPathParams(...)</code>: Parses dynamic segments from a path (e.g., <code>:id</code>).</li>
+<li><code>isNearMatch(...)</code>: Indicates if the path is almost matching a route, useful for fallback logic.</li>
+<li><code>analyzeRoute(...)</code>: Provides a comprehensive analysis of a route from settings.</li>
+<li><code>buildRouteState(...)</code>: Constructs a full <code>RouteState</code> object from <code>RouteSettings</code>.</li>
+</ul>
+<hr>
+<h2 id="conclusion">Conclusion</h2>
+<p>AppRouter draws from the best practices of Angular and Express.js but is built natively for Flutter. It provides robust, declarative routing suitable for applications that require authentication, path guards, and modular route handling. With built-in testability and separation of concerns, it’s ideal for both small and large-scale Flutter projects.</p>
+</section>
+
+
+      <section class="summary">
+          <h2>Libraries</h2>
+        <dl>
+          <dt id="route_definer">
+  <span class="name"><a href="route_definer/">route_definer</a></span> 
+
+</dt>
+<dd>A flexible routing system for Flutter with support for guards, dynamic paths, and authorization.
+</dd>
+
+        </dl>
+      </section>
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="https://github.com/arlamend7/flutter_route_definer">route_definer package</a></li>
+</ol>
+
+    <h5 class="hidden-xs"><span class="package-name">route_definer</span> <span class="package-kind">package</span></h5>
+    <ol>
+      <li class="section-title">Libraries</li>
+      <li><a href="route_definer/">route_definer</a></li>
+</ol>
+
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div>
+</main>
+<footer>
+  <span class="no-break">
+    route_definer
+      1.1.0
+  </span>
+  
+</footer>
+
+
+<script src="static-assets/highlight.pack.js?v1"></script>
+<script src="static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+
