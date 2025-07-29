@@ -1,0 +1,31 @@
+name: Deploy Dart API Docs to GitHub Pages
+
+on:
+  push:
+    branches: [master]  # Ou outra branch que você usa
+
+permissions:
+  contents: write  # Permite publicar no gh-pages
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Dart
+      uses: dart-lang/setup-dart@v1
+
+    - name: Install dependencies
+      run: dart pub get
+
+    - name: Generate documentation
+      run: dart doc --output doc/api
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: doc/api
