@@ -36,5 +36,5 @@
 - Updated overall project documentation
 - Added comprehensive API documentation for the library
 
-## [1.2.1] - 2025-06-18
+## [1.2.2] - 2025-06-18
 - Resolved runtime error when redirecting during route build phase by deferring navigation with `Future.microtask`
