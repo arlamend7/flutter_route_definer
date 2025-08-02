@@ -54,7 +54,7 @@ class AppRouter {
     final redirect = match.evaluateRedirect(state);
     if (redirect != null) {
       return _buildMaterialPageRoute(settings, (context) {
-        final redirection = Navigator.popAndPushNamed(context, redirect);
+        final redirection = Future.microtask(_redirect(context, redirect));
         if (_globalDefiner.onRedirect != null) {
           return _globalDefiner.onRedirect!.call(state, redirect, redirection);
         }
@@ -78,6 +78,13 @@ class AppRouter {
       (ctx) => match.builder(ctx, state),
       match.options,
     );
+  }
+
+  /// Returns a function that pops the current route and pushes [routeName].
+  ///
+  /// Useful for redirecting by replacing the current screen.
+  static Future<void> Function() _redirect(BuildContext context, String routeName) {
+    return () => Navigator.popAndPushNamed(context, routeName);
   }
 
   /// Builds a [MaterialPageRoute] using either the provided route options
