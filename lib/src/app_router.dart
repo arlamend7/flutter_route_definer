@@ -83,7 +83,8 @@ class AppRouter {
   /// Returns a function that pops the current route and pushes [routeName].
   ///
   /// Useful for redirecting by replacing the current screen.
-  static Future<void> Function() _redirect(BuildContext context, String routeName) {
+  static Future<void> Function() _redirect(
+      BuildContext context, String routeName) {
     return () => Navigator.popAndPushNamed(context, routeName);
   }
 
