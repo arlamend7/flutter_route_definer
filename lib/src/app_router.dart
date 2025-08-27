@@ -1,10 +1,9 @@
 // lib/route_definer.dart
 
-import 'package:route_definer/src/global_route_definer.dart';
-import 'package:route_definer/src/route_definer.dart';
-import 'package:route_definer/src/route_options.dart';
-import 'package:route_definer/src/route_state.dart';
 import 'package:flutter/material.dart';
+import 'package:route_definer/route_definer.dart';
+import 'package:route_definer/src/current_route.dart';
+import 'package:route_definer/src/deafault_guard_handler_page.dart';
 
 /// A central router class that manages app navigation, route matching,
 /// authorization checks, redirects, and unknown route handling.
@@ -51,41 +50,27 @@ class AppRouter {
       return _globalDefiner.onUnknownRoute(settings, state);
     }
 
-    final redirect = match.evaluateRedirect(state);
-    if (redirect != null) {
-      return _buildMaterialPageRoute(settings, (context) {
-        final redirection = Future.microtask(_redirect(context, redirect));
-        if (_globalDefiner.onRedirect != null) {
-          return _globalDefiner.onRedirect!.call(state, redirect, redirection);
-        }
-        return const Center(child: CircularProgressIndicator());
-      }, match.options);
-    }
+    return _buildMaterialPageRoute(settings, (ctx) {
+      final CurrentRoute currentRoute = CurrentRoute(context: ctx, route: match, state: state);
 
-    final isAuth = !match.requireAuthorization ||
-        (_globalDefiner.isAuthorized?.call(state) ?? false);
-
-    if (!isAuth && _globalDefiner.unauthorizedBuilder != null) {
-      return _buildMaterialPageRoute(
-        settings,
-        (ctx) => _globalDefiner.unauthorizedBuilder!(ctx, state),
-        match.options,
+      return RouteLoaderWidget(
+        currentRoute: currentRoute,
+        loader: _globalDefiner.loaderBuilder?.call(currentRoute),
+        guardStream: _resolveRedirection(match, currentRoute),
+        authenticationTask: match.isAuthorized
+            ?.call(currentRoute)
+            .then((value) => value ? null : _globalDefiner.unauthorizedBuilder?.call(ctx, currentRoute)),
       );
-    }
-
-    return _buildMaterialPageRoute(
-      settings,
-      (ctx) => match.builder(ctx, state),
-      match.options,
-    );
+    }, match.options);
   }
 
-  /// Returns a function that pops the current route and pushes [routeName].
-  ///
-  /// Useful for redirecting by replacing the current screen.
-  static Future<void> Function() _redirect(
-      BuildContext context, String routeName) {
-    return () => Navigator.popAndPushNamed(context, routeName);
+  static Stream<String?> _resolveRedirection(RouteDefiner route, CurrentRoute currentRoute) async* {
+    for (var element in route.guards) {
+      await element.check(currentRoute);
+      if (!currentRoute.context.mounted) {
+        return;
+      }
+    }
   }
 
   /// Builds a [MaterialPageRoute] using either the provided route options
@@ -120,9 +105,7 @@ class AppRouter {
 
   /// Builds a [RouteState] object from [RouteSettings], parsing path, query parameters, fragment, and arguments.
   static RouteState buildRouteState(RouteSettings settings) {
-    final routeName = settings.name?.isNotEmpty == true
-        ? settings.name!
-        : _globalDefiner.initialRoute;
+    final routeName = settings.name?.isNotEmpty == true ? settings.name! : _globalDefiner.initialRoute;
     final uri = Uri.parse(routeName);
     return RouteState(
       path: uri.path,
@@ -150,10 +133,7 @@ class AppRouter {
   /// For example, pattern '/user/:id' and actual '/user/42' returns {'id': '42'}.
   /// Returns null if the actual path does not match the pattern.
   static Map<String, String>? extractPathParams(String pattern, String actual) {
-    final regExpPattern = pattern.replaceAllMapped(
-      RegExp(r':(\w+)'),
-      (match) => '(?<${match[1]}>[\\w-]+)',
-    );
+    final regExpPattern = pattern.replaceAllMapped(RegExp(r':(\w+)'), (match) => '(?<${match[1]}>[\\w-]+)');
     final regExp = RegExp('^$regExpPattern\$');
     final match = regExp.firstMatch(actual);
     if (match == null) return null;
@@ -172,9 +152,7 @@ class AppRouter {
   /// Analyzes [RouteSettings] by building the [RouteState] and matching it against routes.
   ///
   /// Returns a tuple containing the route state, the matched route (if any), and whether the match is near.
-  static ({RouteState state, RouteDefiner? match, bool isNear}) analyzeRoute(
-    RouteSettings settings,
-  ) {
+  static ({RouteState state, RouteDefiner? match, bool isNear}) analyzeRoute(RouteSettings settings) {
     final state = buildRouteState(settings);
     final (match, isNear) = matchRoute(state.path);
     if (match != null) {

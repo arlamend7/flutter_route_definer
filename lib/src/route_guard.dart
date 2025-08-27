@@ -1,4 +1,4 @@
-import 'package:route_definer/src/route_state.dart';
+import 'package:route_definer/src/current_route.dart';
 
 /// Interface for defining route guards that control access or
 /// redirect based on the current route state.
@@ -13,5 +13,5 @@ abstract class RouteGuard {
   ///
   /// The [state] parameter provides the current [RouteState] with
   /// path, parameters, query, fragment, and arguments.
-  String? redirect(RouteState state);
+  Future<void> check(CurrentRoute currentRoute);
 }
