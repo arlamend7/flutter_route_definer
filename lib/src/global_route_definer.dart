@@ -15,17 +15,16 @@ class GlobalRouteDefiner {
   /// The title of the application.
   final String title;
 
-  /// A widget builder invoked when a redirect occurs.
+  /// A widget builder invoked while guards run or a redirect occurs.
   ///
-  /// Receives the current [RouteState], the redirect target path,
-  /// and the future representing the navigation action.
+  /// Receives the current [CurrentRoute] information.
   final Widget Function(CurrentRoute currentRoute)? loaderBuilder;
 
   /// A widget builder for unauthorized access cases.
   ///
   /// Called when a route requires authorization but the user
   /// is not authorized. Provides the current [BuildContext]
-  /// and [RouteState].
+  /// and [CurrentRoute].
   final Widget Function(BuildContext, CurrentRoute)? unauthorizedBuilder;
 
   /// A function that returns a [MaterialPageRoute] for unknown routes.

@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:route_definer/src/current_route.dart';
 
+/// Widget that handles route guards and optional authentication before
+/// displaying the final page to the user.
 class RouteLoaderWidget extends StatefulWidget {
+  /// Information about the route being navigated to.
   final CurrentRoute currentRoute;
+
+  /// Optional widget displayed while guards or authentication are resolving.
   final Widget? loader;
+
+  /// Stream completing when all route guards have finished execution.
   final Stream<void> guardStream;
+
+  /// Optional asynchronous task used to validate authorization.
   final Future<Widget?>? authenticationTask;
 
+  /// Creates a [RouteLoaderWidget] that resolves guards and authentication.
   const RouteLoaderWidget({
     super.key,
     required this.currentRoute,
@@ -19,7 +29,9 @@ class RouteLoaderWidget extends StatefulWidget {
   State<RouteLoaderWidget> createState() => _RouteLoaderWidgetState();
 }
 
+/// State for [RouteLoaderWidget] that manages guard and authentication logic.
 class _RouteLoaderWidgetState extends State<RouteLoaderWidget> {
+  /// The widget currently being displayed, if any.
   Widget? _pageToShow;
 
   @override
@@ -57,10 +69,12 @@ class _RouteLoaderWidgetState extends State<RouteLoaderWidget> {
 
   /// Loads the actual page for the current route.
   void _loadFinalPage() {
-    final page = widget.currentRoute.route.builder(context, widget.currentRoute.state);
+    final page =
+        widget.currentRoute.route.builder(context, widget.currentRoute.state);
     _setPage(page);
   }
 
+  /// Updates the state with [widgetToShow] as the current page.
   void _setPage(Widget widgetToShow) {
     setState(() {
       _pageToShow = widgetToShow;
