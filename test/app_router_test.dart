@@ -50,6 +50,10 @@ void main() {
       builder: (_, __) => const Scaffold(body: Text('Login')),
     ),
     RouteDefiner(path: '/main', builder: (_, __) => const Placeholder(), isAuthorized: (currentRoute) async => false),
+    RouteDefiner(
+        path: '/secure',
+        builder: (_, __) => const Scaffold(body: Text('Secure')),
+        isAuthorized: (currentRoute) async => true),
     RouteDefiner(path: '/article/:id', builder: (_, __) => const Placeholder()),
     RouteDefiner(path: '/user/:id', builder: (_, __) => const Placeholder()),
     RouteDefiner(
@@ -143,6 +147,16 @@ void main() {
     testWidgets('Handles unauthorized route access', (tester) async {
       await pumpRoute(tester, '/main');
       expect(find.text('Unauthorized'), findsOneWidget);
+    });
+
+    testWidgets('Allows authorized route access', (tester) async {
+      await pumpRoute(tester, '/secure');
+      expect(find.text('Secure'), findsOneWidget);
+    });
+
+    testWidgets('Falls back to unknown route on near match', (tester) async {
+      await pumpRoute(tester, '/settings');
+      expect(find.text('404'), findsOneWidget);
     });
   });
 
@@ -268,6 +282,11 @@ void main() {
     test('extractPathParams extracts params correctly', () {
       final params = AppRouter.extractPathParams('/user/:id', '/user/123');
       expect(params, {'id': '123'});
+    });
+
+    test('onUnknownRoute returns fallback page', () {
+      final route = AppRouter.onUnknownRoute(const RouteSettings(name: '/missing'));
+      expect(route, isA<MaterialPageRoute>());
     });
 
     test('buildRouteState parses RouteSettings correctly', () {
