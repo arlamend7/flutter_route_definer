@@ -13,9 +13,13 @@ import 'package:route_definer/src/deafault_guard_handler_page.dart';
 /// The class provides methods to generate routes dynamically based on
 /// [RouteSettings], including authorization and redirection logic.
 class AppRouter {
-  AppRouter._(); // Prevents instantiation
+  /// Private constructor to prevent instantiation.
+  AppRouter._();
 
+  /// Holds global route configuration shared across the application.
   static late GlobalRouteDefiner _globalDefiner;
+
+  /// Collection of all defined routes that the router can match against.
   static late List<RouteDefiner> _routes;
 
   /// Returns the initial route defined in the global route definer.
@@ -64,6 +68,8 @@ class AppRouter {
     }, match.options);
   }
 
+  /// Executes each guard associated with [route], allowing them to perform
+  /// asynchronous checks or trigger redirects through [currentRoute].
   static Stream<void> _resolveRedirection(RouteDefiner route, CurrentRoute currentRoute) async* {
     for (var element in route.guards) {
       await element.check(currentRoute);

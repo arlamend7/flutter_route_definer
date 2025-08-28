@@ -13,6 +13,8 @@ class RouteDefiner {
   /// It receives the current [BuildContext] and the [RouteState] with
   /// parsed parameters, query, fragment, and arguments.
   final Widget Function(BuildContext context, RouteState state) builder;
+  /// Optional authorization check that returns `true` when the user is
+  /// allowed to access this route.
   final Future<bool> Function(CurrentRoute currentRoute)? isAuthorized;
 
   /// List of route guards to control access or redirection for this route.
@@ -20,7 +22,12 @@ class RouteDefiner {
   /// Guards are checked in order and can trigger redirects by returning
   /// a non-null route path.
   final List<RouteGuard> guards;
+  /// Arbitrary data associated with the route which can be consumed by
+  /// widgets or middleware.
   final Map<String, Object>? data;
+
+  /// Lazily evaluated title used by [TitleObserver] when updating the
+  /// browser or app bar title.
   final Future<String> Function()? title;
 
   /// Optional route-specific overrides for MaterialPageRoute behavior.
