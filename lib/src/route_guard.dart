@@ -6,12 +6,9 @@ abstract class RouteGuard {
   /// Creates a [RouteGuard].
   const RouteGuard();
 
-  /// Determines if navigation to a route should be redirected.
+  /// Performs any logic required before allowing navigation.
   ///
-  /// Returns a redirect path as a [String] if access is blocked,
-  /// or `null` if navigation is allowed.
-  ///
-  /// The [state] parameter provides the current [RouteState] with
-  /// path, parameters, query, fragment, and arguments.
+  /// Implementations may trigger navigation actions (e.g., redirects)
+  /// by using the provided [CurrentRoute].
   Future<void> check(CurrentRoute currentRoute);
 }
