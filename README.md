@@ -71,6 +71,8 @@ The `RouteState` object gives full introspection of the current route:
 
 ## Migration Guides
 
+- [Upgrading from 1.2.2 to 2.0.0](MIGRATION.md)
+
 
 ## Changelog
 
