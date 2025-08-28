@@ -4,7 +4,7 @@ import 'package:route_definer/src/current_route.dart';
 class RouteLoaderWidget extends StatefulWidget {
   final CurrentRoute currentRoute;
   final Widget? loader;
-  final Stream<String?> guardStream;
+  final Stream<void> guardStream;
   final Future<Widget?>? authenticationTask;
 
   const RouteLoaderWidget({
@@ -21,7 +21,6 @@ class RouteLoaderWidget extends StatefulWidget {
 
 class _RouteLoaderWidgetState extends State<RouteLoaderWidget> {
   Widget? _pageToShow;
-  bool _hasRedirected = false;
 
   @override
   void initState() {
@@ -39,13 +38,8 @@ class _RouteLoaderWidgetState extends State<RouteLoaderWidget> {
       return;
     }
 
-    final redirectPath = await _checkRouteGuards();
+    await _checkRouteGuards();
     if (!mounted) return;
-
-    if (redirectPath != null) {
-      _performRedirect(redirectPath);
-      return;
-    }
 
     _loadFinalPage();
   }
@@ -56,19 +50,9 @@ class _RouteLoaderWidgetState extends State<RouteLoaderWidget> {
     return await widget.authenticationTask;
   }
 
-  /// Waits for the first guard that returns a redirect path.
-  Future<String?> _checkRouteGuards() async {
-    return await widget.guardStream.firstWhere((redirect) => redirect != null, orElse: () => null);
-  }
-
-  /// Triggers a redirection to the given path.
-  void _performRedirect(String path) {
-    if (_hasRedirected) return;
-    _hasRedirected = true;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.of(context).pushReplacementNamed(path);
-    });
+  /// Waits for all guards to complete.
+  Future<void> _checkRouteGuards() async {
+    await widget.guardStream.drain<void>();
   }
 
   /// Loads the actual page for the current route.

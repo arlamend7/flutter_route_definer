@@ -10,7 +10,11 @@ class DummyGuard implements RouteGuard {
   DummyGuard(this.allow);
 
   @override
-  Future<String?> check(CurrentRoute route) async => allow ? null : '/login';
+  Future<void> check(CurrentRoute route) async {
+    if (!allow) {
+      Navigator.of(route.context).pushReplacementNamed('/login');
+    }
+  }
 }
 
 class DummyUserPrefs {
@@ -20,16 +24,21 @@ class DummyUserPrefs {
 
 class AuthenticatedRedirectGuard extends RouteGuard {
   @override
-  Future<String?> check(CurrentRoute route) async =>
-      DummyUserPrefs.isAuthenticated ? '/main' : null;
+  Future<void> check(CurrentRoute route) async {
+    if (DummyUserPrefs.isAuthenticated) {
+      Navigator.of(route.context).pushReplacementNamed('/main');
+    }
+  }
 }
 
 class PasswordChangeProgressGuard extends RouteGuard {
   @override
-  Future<String?> check(CurrentRoute route) async {
+  Future<void> check(CurrentRoute route) async {
     final args = route.state.arguments;
     final emailPresent = args != null && args['email'] != null;
-    return (emailPresent || DummyUserPrefs.passwordChange != null) ? null : '/login';
+    if (!(emailPresent || DummyUserPrefs.passwordChange != null)) {
+      Navigator.of(route.context).pushReplacementNamed('/login');
+    }
   }
 }
 

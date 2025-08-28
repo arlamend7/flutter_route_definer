@@ -64,7 +64,7 @@ class AppRouter {
     }, match.options);
   }
 
-  static Stream<String?> _resolveRedirection(RouteDefiner route, CurrentRoute currentRoute) async* {
+  static Stream<void> _resolveRedirection(RouteDefiner route, CurrentRoute currentRoute) async* {
     for (var element in route.guards) {
       await element.check(currentRoute);
       if (!currentRoute.context.mounted) {
