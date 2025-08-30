@@ -46,3 +46,6 @@
 
 ## [2.0.1] - 2025-08-30
 - Downgraded `web` dependency and allowed any version for maximum adaptability.
+
+## [2.0.2] - 2025-08-31
+- Exported all core classes in `route_definer.dart` for easier package consumption.
