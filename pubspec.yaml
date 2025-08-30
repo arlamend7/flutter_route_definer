@@ -15,7 +15,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  web: any
+  web: ">=0.3.0 <1.1.1"
 
 dev_dependencies:
   flutter_test:
