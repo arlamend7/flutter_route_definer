@@ -1,6 +1,6 @@
 name: route_definer
 description: An advanced router for Flutter with support for parsing routes, parameters, and guards.
-version: 2.0.0
+version: 2.0.1
 homepage: https://github.com/arlamend7/flutter_route_definer
 repository: https://github.com/arlamend7/flutter_route_definer
 issue_tracker: https://github.com/arlamend7/flutter_route_definer/issues
@@ -15,7 +15,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  web: ^1.1.1
+  web: any
 
 dev_dependencies:
   flutter_test:
