@@ -43,3 +43,6 @@
 - Stabilized public APIs and bumped package version to 2.0.0.
 - Added tests for route guards, title updates, and loader widget to reach full coverage.
 - Verified package readiness for publishing with a perfect pub score.
+
+## [2.0.1] - 2025-08-30
+- Downgraded `web` dependency and allowed any version for maximum adaptability.
