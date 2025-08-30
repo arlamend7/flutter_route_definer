@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:route_definer/route_definer.dart';
+import 'package:route_definer/src/title_observer.dart';
 
 void main() {
   AppRouter.init(
     GlobalRouteDefiner(
       initialRoute: '/',
       title: 'Route Example',
-      isAuthorized: (_) => true,
       unauthorizedBuilder: (_, __) =>
           const Scaffold(body: Center(child: Text("Unauthorized"))),
       onUnknownRoute: (_, __) => MaterialPageRoute(
@@ -31,6 +31,12 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRouter.initialRoute,
       onGenerateRoute: AppRouter.onGenerateRoute,
       onUnknownRoute: AppRouter.onUnknownRoute,
+      navigatorObservers: [
+        TitleObserver(
+            appTitle: (appName, routeName) => (routeName?.isEmpty ?? true)
+                ? appName
+                : "$appName | $routeName")
+      ],
     );
   }
 }

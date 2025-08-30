@@ -1,5 +1,6 @@
-import 'package:route_definer/route_definer.dart';
 import 'package:flutter/material.dart';
+import 'package:route_definer/route_definer.dart';
+import 'package:route_definer/src/current_route.dart';
 
 /// Defines global route-related settings and behaviors for the app router.
 ///
@@ -14,23 +15,17 @@ class GlobalRouteDefiner {
   /// The title of the application.
   final String title;
 
-  /// A callback to determine if the current [RouteState] is authorized.
+  /// A widget builder invoked while guards run or a redirect occurs.
   ///
-  /// If not provided, routes requiring authorization will allow access by default.
-  final bool Function(RouteState)? isAuthorized;
-
-  /// A widget builder invoked when a redirect occurs.
-  ///
-  /// Receives the current [RouteState], the redirect target path,
-  /// and the future representing the navigation action.
-  final Widget Function(RouteState, String, Future<void>)? onRedirect;
+  /// Receives the current [CurrentRoute] information.
+  final Widget Function(CurrentRoute currentRoute)? loaderBuilder;
 
   /// A widget builder for unauthorized access cases.
   ///
   /// Called when a route requires authorization but the user
   /// is not authorized. Provides the current [BuildContext]
-  /// and [RouteState].
-  final Widget Function(BuildContext, RouteState)? unauthorizedBuilder;
+  /// and [CurrentRoute].
+  final Widget Function(BuildContext, CurrentRoute)? unauthorizedBuilder;
 
   /// A function that returns a [MaterialPageRoute] for unknown routes.
   ///
@@ -50,8 +45,7 @@ class GlobalRouteDefiner {
   const GlobalRouteDefiner({
     required this.initialRoute,
     required this.title,
-    this.onRedirect,
-    this.isAuthorized,
+    this.loaderBuilder,
     this.unauthorizedBuilder,
     required this.onUnknownRoute,
     this.defaultRouteOptions = const RouteOptions(),

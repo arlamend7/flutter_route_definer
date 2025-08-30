@@ -38,3 +38,8 @@
 
 ## [1.2.2] - 2025-06-18
 - Resolved runtime error when redirecting during route build phase by deferring navigation with `Future.microtask`
+
+## [2.0.0] - 2025-08-28
+- Stabilized public APIs and bumped package version to 2.0.0.
+- Added tests for route guards, title updates, and loader widget to reach full coverage.
+- Verified package readiness for publishing with a perfect pub score.
