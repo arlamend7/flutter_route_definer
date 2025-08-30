@@ -13,6 +13,7 @@ class RouteDefiner {
   /// It receives the current [BuildContext] and the [RouteState] with
   /// parsed parameters, query, fragment, and arguments.
   final Widget Function(BuildContext context, RouteState state) builder;
+
   /// Optional authorization check that returns `true` when the user is
   /// allowed to access this route.
   final Future<bool> Function(CurrentRoute currentRoute)? isAuthorized;
@@ -22,6 +23,7 @@ class RouteDefiner {
   /// Guards are checked in order and can trigger redirects by returning
   /// a non-null route path.
   final List<RouteGuard> guards;
+
   /// Arbitrary data associated with the route which can be consumed by
   /// widgets or middleware.
   final Map<String, Object>? data;

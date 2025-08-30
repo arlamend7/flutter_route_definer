@@ -9,8 +9,8 @@ void main() {
       GlobalRouteDefiner(
         initialRoute: '/',
         title: 'App',
-        onUnknownRoute: (settings, state) =>
-            MaterialPageRoute(builder: (_) => const Placeholder(), settings: settings),
+        onUnknownRoute: (settings, state) => MaterialPageRoute(
+            builder: (_) => const Placeholder(), settings: settings),
       ),
       [
         RouteDefiner(
@@ -36,14 +36,17 @@ void main() {
     });
 
     observer.didPush(
-      MaterialPageRoute(settings: const RouteSettings(name: '/withTitle'), builder: (_) => const Placeholder()),
+      MaterialPageRoute(
+          settings: const RouteSettings(name: '/withTitle'),
+          builder: (_) => const Placeholder()),
       null,
     );
     await tester.pump();
     expect(captured, 'Route Title');
   });
 
-  testWidgets('falls back to app title when route has no title', (tester) async {
+  testWidgets('falls back to app title when route has no title',
+      (tester) async {
     String? captured;
     final observer = TitleObserver(appTitle: (app, route) {
       captured = route;
@@ -51,7 +54,9 @@ void main() {
     });
 
     observer.didPush(
-      MaterialPageRoute(settings: const RouteSettings(name: '/noTitle'), builder: (_) => const Placeholder()),
+      MaterialPageRoute(
+          settings: const RouteSettings(name: '/noTitle'),
+          builder: (_) => const Placeholder()),
       null,
     );
     await tester.pump();
@@ -109,7 +114,8 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('falls back to app title when title builder throws', (tester) async {
+  testWidgets('falls back to app title when title builder throws',
+      (tester) async {
     bool called = false;
     final observer = TitleObserver(appTitle: (app, route) {
       called = true;

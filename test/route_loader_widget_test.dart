@@ -5,9 +5,16 @@ import 'package:route_definer/src/current_route.dart';
 import 'package:route_definer/src/deafault_guard_handler_page.dart';
 
 void main() {
-  testWidgets('shows auth widget when authentication provides one', (tester) async {
-    final route = RouteDefiner(path: '/dummy', builder: (_, __) => const Text('Final'));
-    final state = RouteState(path: '/dummy', uriParams: null, queryParams: const {}, fragment: '', arguments: null);
+  testWidgets('shows auth widget when authentication provides one',
+      (tester) async {
+    final route =
+        RouteDefiner(path: '/dummy', builder: (_, __) => const Text('Final'));
+    final state = RouteState(
+        path: '/dummy',
+        uriParams: null,
+        queryParams: const {},
+        fragment: '',
+        arguments: null);
 
     await tester.pumpWidget(MaterialApp(
       home: Builder(builder: (ctx) {
@@ -26,8 +33,14 @@ void main() {
   });
 
   testWidgets('builds final page after guards complete', (tester) async {
-    final route = RouteDefiner(path: '/dummy', builder: (_, __) => const Text('Final'));
-    final state = RouteState(path: '/dummy', uriParams: null, queryParams: const {}, fragment: '', arguments: null);
+    final route =
+        RouteDefiner(path: '/dummy', builder: (_, __) => const Text('Final'));
+    final state = RouteState(
+        path: '/dummy',
+        uriParams: null,
+        queryParams: const {},
+        fragment: '',
+        arguments: null);
 
     await tester.pumpWidget(MaterialApp(
       home: Builder(builder: (ctx) {

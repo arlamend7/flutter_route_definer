@@ -33,16 +33,19 @@ void main() {
       GlobalRouteDefiner(
         initialRoute: '/',
         title: 'Test App',
-        onUnknownRoute: (settings, state) =>
-            MaterialPageRoute(builder: (_) => const Placeholder(), settings: settings),
+        onUnknownRoute: (settings, state) => MaterialPageRoute(
+            builder: (_) => const Placeholder(), settings: settings),
       ),
       [
         RouteDefiner(path: '/', builder: (_, __) => const Placeholder()),
-        RouteDefiner(path: '/guarded', builder: (_, __) => const Placeholder(), guards: [guard]),
+        RouteDefiner(
+            path: '/guarded',
+            builder: (_, __) => const Placeholder(),
+            guards: [guard]),
       ],
     );
 
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(const MaterialApp(
       onGenerateRoute: AppRouter.onGenerateRoute,
       onUnknownRoute: AppRouter.onUnknownRoute,
       initialRoute: '/guarded',
@@ -58,8 +61,8 @@ void main() {
       GlobalRouteDefiner(
         initialRoute: '/',
         title: 'Test App',
-        onUnknownRoute: (settings, state) =>
-            MaterialPageRoute(builder: (_) => const Placeholder(), settings: settings),
+        onUnknownRoute: (settings, state) => MaterialPageRoute(
+            builder: (_) => const Placeholder(), settings: settings),
       ),
       [
         RouteDefiner(path: '/login', builder: (_, __) => const Text('Login')),

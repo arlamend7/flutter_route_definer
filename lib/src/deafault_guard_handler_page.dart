@@ -83,6 +83,8 @@ class _RouteLoaderWidgetState extends State<RouteLoaderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return _pageToShow ?? widget.loader ?? const Scaffold(body: Center(child: CircularProgressIndicator()));
+    return _pageToShow ??
+        widget.loader ??
+        const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

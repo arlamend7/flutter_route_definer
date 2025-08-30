@@ -16,7 +16,8 @@ void main() {
       barrierDismissible: false,
       requestFocus: true,
     );
-    const override = RouteOptions(fullscreenDialog: true, barrierDismissible: true);
+    const override =
+        RouteOptions(fullscreenDialog: true, barrierDismissible: true);
     final merged = base.merge(override);
     expect(merged.fullscreenDialog, isTrue);
     expect(merged.maintainState, isTrue);

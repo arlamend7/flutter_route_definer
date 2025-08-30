@@ -49,7 +49,10 @@ void main() {
       path: '/login',
       builder: (_, __) => const Scaffold(body: Text('Login')),
     ),
-    RouteDefiner(path: '/main', builder: (_, __) => const Placeholder(), isAuthorized: (currentRoute) async => false),
+    RouteDefiner(
+        path: '/main',
+        builder: (_, __) => const Placeholder(),
+        isAuthorized: (currentRoute) async => false),
     RouteDefiner(
         path: '/secure',
         builder: (_, __) => const Scaffold(body: Text('Secure')),
@@ -91,7 +94,8 @@ void main() {
           builder: (_) => const Scaffold(body: Text('404')),
           settings: settings,
         ),
-        unauthorizedBuilder: (context, state) => const Scaffold(body: Text('Unauthorized')),
+        unauthorizedBuilder: (context, state) =>
+            const Scaffold(body: Text('Unauthorized')),
         defaultRouteOptions: const RouteOptions(
           fullscreenDialog: false,
           maintainState: false,
@@ -285,7 +289,8 @@ void main() {
     });
 
     test('onUnknownRoute returns fallback page', () {
-      final route = AppRouter.onUnknownRoute(const RouteSettings(name: '/missing'));
+      final route =
+          AppRouter.onUnknownRoute(const RouteSettings(name: '/missing'));
       expect(route, isA<MaterialPageRoute>());
     });
 

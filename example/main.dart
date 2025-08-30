@@ -7,7 +7,8 @@ void main() {
     GlobalRouteDefiner(
       initialRoute: '/',
       title: 'Route Example',
-      unauthorizedBuilder: (_, __) => const Scaffold(body: Center(child: Text("Unauthorized"))),
+      unauthorizedBuilder: (_, __) =>
+          const Scaffold(body: Center(child: Text("Unauthorized"))),
       onUnknownRoute: (_, __) => MaterialPageRoute(
         builder: (_) => const Scaffold(body: Text("404")),
       ),
@@ -32,7 +33,9 @@ class MyApp extends StatelessWidget {
       onUnknownRoute: AppRouter.onUnknownRoute,
       navigatorObservers: [
         TitleObserver(
-            appTitle: (appName, routeName) => (routeName?.isEmpty ?? true) ? appName : "$appName | $routeName")
+            appTitle: (appName, routeName) => (routeName?.isEmpty ?? true)
+                ? appName
+                : "$appName | $routeName")
       ],
     );
   }
