@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:route_definer/route_definer.dart';
 
@@ -18,23 +20,39 @@ class TitleObserver extends NavigatorObserver {
   /// Called when a route has been pushed onto the navigator.
   @override
   void didPush(Route route, Route? previousRoute) {
-    _updateTitle(route.settings);
+    // The observer hooks are synchronous, so we intentionally ignore the
+    // returned future. Updates are fire-and-forget.
+    unawaited(_updateTitle(route.settings));
   }
 
   /// Called when a route has been replaced by another.
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
-    if (newRoute != null) _updateTitle(newRoute.settings);
+    if (newRoute != null) {
+      // Replacement happens during navigation; awaiting is unnecessary.
+      unawaited(_updateTitle(newRoute.settings));
+    }
   }
 
   /// Called when a route has been popped off the navigator.
   @override
   void didPop(Route route, Route? previousRoute) {
-    if (previousRoute != null) _updateTitle(previousRoute.settings);
+    if (previousRoute != null) {
+      // We only care about side effects on the browser title.
+      unawaited(_updateTitle(previousRoute.settings));
+    }
   }
 
-  /// Updates the browser title based on the given [settings].
-  void _updateTitle(RouteSettings settings) async {
+  /// Updates the browser title based on the provided route [settings].
+  ///
+  /// This method retrieves the [RouteDefiner] for the settings and applies
+  /// its asynchronous title resolver when available. Navigator observer
+  /// callbacks have no cancellation mechanism, so no cancellation token is
+  /// accepted.
+  ///
+  /// Returns a [Future] that completes after the title has been updated.
+  /// If an error occurs, the application title is used as a fallback.
+  Future<void> _updateTitle(RouteSettings settings) async {
     try {
       final definer = AppRouter.analyzeRoute(settings);
       final titleFn = definer.match?.title;
