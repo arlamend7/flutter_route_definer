@@ -15,7 +15,7 @@ class RouteState {
   final String fragment;
 
   /// Optional arguments passed along with the route.
-  final dynamic arguments;
+  final Object? arguments;
 
   /// Creates a [RouteState] object with all the relevant route information.
   ///

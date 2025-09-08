@@ -3,16 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:route_definer/route_definer.dart';
 import 'package:route_definer/src/title_observer.dart';
 
+/// Tests for [TitleObserver] behavior.
 void main() {
   setUp(() {
     AppRouter.init(
       GlobalRouteDefiner(
         initialRoute: '/',
         title: 'App',
-        onUnknownRoute: (settings, state) => MaterialPageRoute(
-            builder: (_) => const Placeholder(), settings: settings),
+        onUnknownRoute: (RouteSettings settings, RouteState state) =>
+            MaterialPageRoute(builder: (_) => const Placeholder(), settings: settings),
       ),
-      [
+      <RouteDefiner>[
         RouteDefiner(
           path: '/withTitle',
           builder: (_, __) => const Placeholder(),
@@ -28,15 +29,16 @@ void main() {
     );
   });
 
-  testWidgets('uses route-specific title when available', (tester) async {
+  testWidgets('uses route-specific title when available',
+      (WidgetTester tester) async {
     String? captured;
-    final observer = TitleObserver(appTitle: (app, route) {
+    final TitleObserver observer = TitleObserver(appTitle: (String app, String? route) {
       captured = route;
       return '';
     });
 
     observer.didPush(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
           settings: const RouteSettings(name: '/withTitle'),
           builder: (_) => const Placeholder()),
       null,
@@ -46,15 +48,15 @@ void main() {
   });
 
   testWidgets('falls back to app title when route has no title',
-      (tester) async {
+      (WidgetTester tester) async {
     String? captured;
-    final observer = TitleObserver(appTitle: (app, route) {
+    final TitleObserver observer = TitleObserver(appTitle: (String app, String? route) {
       captured = route;
       return '';
     });
 
     observer.didPush(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
           settings: const RouteSettings(name: '/noTitle'),
           builder: (_) => const Placeholder()),
       null,
@@ -63,14 +65,15 @@ void main() {
     expect(captured, isNull);
   });
 
-  testWidgets('didReplace uses new route when provided', (tester) async {
+  testWidgets('didReplace uses new route when provided',
+      (WidgetTester tester) async {
     String? captured;
-    final observer = TitleObserver(appTitle: (app, route) {
+    final TitleObserver observer = TitleObserver(appTitle: (String app, String? route) {
       captured = route;
       return '';
     });
     observer.didReplace(
-      newRoute: MaterialPageRoute(
+      newRoute: MaterialPageRoute<void>(
           settings: const RouteSettings(name: '/withTitle'),
           builder: (_) => const Placeholder()),
       oldRoute: null,
@@ -79,23 +82,25 @@ void main() {
     expect(captured, 'Route Title');
   });
 
-  testWidgets('didReplace ignores when newRoute is null', (tester) async {
-    final observer = TitleObserver(appTitle: (_, __) => '');
+  testWidgets('didReplace ignores when newRoute is null',
+      (WidgetTester tester) async {
+    final TitleObserver observer = TitleObserver(appTitle: (_, __) => '');
     observer.didReplace(newRoute: null, oldRoute: null);
     await tester.pump();
   });
 
-  testWidgets('didPop uses previous route when available', (tester) async {
+  testWidgets('didPop uses previous route when available',
+      (WidgetTester tester) async {
     String? captured;
-    final observer = TitleObserver(appTitle: (app, route) {
+    final TitleObserver observer = TitleObserver(appTitle: (String app, String? route) {
       captured = route;
       return '';
     });
     observer.didPop(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
           settings: const RouteSettings(name: '/noTitle'),
           builder: (_) => const Placeholder()),
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
           settings: const RouteSettings(name: '/withTitle'),
           builder: (_) => const Placeholder()),
     );
@@ -103,10 +108,11 @@ void main() {
     expect(captured, 'Route Title');
   });
 
-  testWidgets('didPop ignores when previousRoute is null', (tester) async {
-    final observer = TitleObserver(appTitle: (_, __) => '');
+  testWidgets('didPop ignores when previousRoute is null',
+      (WidgetTester tester) async {
+    final TitleObserver observer = TitleObserver(appTitle: (_, __) => '');
     observer.didPop(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
           settings: const RouteSettings(name: '/noTitle'),
           builder: (_) => const Placeholder()),
       null,
@@ -115,14 +121,14 @@ void main() {
   });
 
   testWidgets('falls back to app title when title builder throws',
-      (tester) async {
+      (WidgetTester tester) async {
     bool called = false;
-    final observer = TitleObserver(appTitle: (app, route) {
+    final TitleObserver observer = TitleObserver(appTitle: (String app, String? route) {
       called = true;
       return '';
     });
     observer.didPush(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
           settings: const RouteSettings(name: '/error'),
           builder: (_) => const Placeholder()),
       null,
