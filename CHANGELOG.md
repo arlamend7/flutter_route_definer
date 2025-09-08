@@ -49,3 +49,7 @@
 
 ## [2.0.2] - 2025-08-31
 - Exported all core classes in `route_definer.dart` for easier package consumption.
+
+## [2.0.3] - 2025-09-08
+- Replaced `dynamic` with `Object?` for `RouteState.arguments` to improve type safety.
+- Refined and documented test suite for clearer coverage.
