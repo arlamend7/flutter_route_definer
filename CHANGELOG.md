@@ -48,5 +48,11 @@
 - Downgraded `web` dependency and allowed any version for maximum adaptability.
 
 
+## [2.0.2] - 2025-08-31
+- Exported all core classes in `route_definer.dart` for easier package consumption.
+- Replaced `dynamic` with `Object?` for `RouteState.arguments` to improve type safety.
+- Refined and documented test suite for clearer coverage.
+
+
 ## [2.0.3] - 2025-08-30
 - Downgraded `web` dependency and allowed any version for maximum adaptability.

@@ -1,12 +1,16 @@
-// test/route_definer_test.dart
+/// Tests covering [AppRouter] features and utilities.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:route_definer/route_definer.dart';
 import 'package:route_definer/src/current_route.dart';
 
+/// A guard that can optionally block navigation.
 class DummyGuard implements RouteGuard {
+  /// Whether navigation is allowed.
   final bool allow;
+
+  /// Creates a [DummyGuard] with the desired [allow] behavior.
   DummyGuard(this.allow);
 
   @override
@@ -17,11 +21,16 @@ class DummyGuard implements RouteGuard {
   }
 }
 
+/// Simple mutable store mimicking user preferences for tests.
 class DummyUserPrefs {
+  /// Whether the user is authenticated.
   static bool isAuthenticated = false;
-  static dynamic passwordChange;
+
+  /// Tracks password change progress if any.
+  static Object? passwordChange;
 }
 
+/// Guard that redirects authenticated users to `/main`.
 class AuthenticatedRedirectGuard extends RouteGuard {
   @override
   Future<void> check(CurrentRoute route) async {
@@ -31,19 +40,22 @@ class AuthenticatedRedirectGuard extends RouteGuard {
   }
 }
 
+/// Guard ensuring password reset has an email or existing progress.
 class PasswordChangeProgressGuard extends RouteGuard {
   @override
   Future<void> check(CurrentRoute route) async {
-    final args = route.state.arguments;
-    final emailPresent = args != null && args['email'] != null;
+    final Object? args = route.state.arguments;
+    final bool emailPresent =
+        args is Map<String, Object?> && args['email'] != null;
     if (!(emailPresent || DummyUserPrefs.passwordChange != null)) {
       Navigator.of(route.context).pushReplacementNamed('/login');
     }
   }
 }
 
+/// Entry point for [AppRouter] tests.
 void main() {
-  final mockRoutes = [
+  final List<RouteDefiner> mockRoutes = [
     RouteDefiner(path: '/', builder: (_, __) => const Placeholder()),
     RouteDefiner(
       path: '/login',
@@ -109,6 +121,7 @@ void main() {
   });
 
   group('AppRouter', () {
+    /// Renders [route] using the router and settles animations.
     Future<void> pumpRoute(WidgetTester tester, String route) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -164,93 +177,7 @@ void main() {
     });
   });
 
-  group('RouteGuard tests', () {
-    // test('DummyGuard allows when true', () {
-    //   final guard = DummyGuard(true);
-    //   final state = RouteState(
-    //     path: '/home',
-    //     queryParams: {},
-    //     fragment: '',
-    //     arguments: null,
-    //   );
-    //   expect(guard.check(state), isNull);
-    // });
-
-    // test('DummyGuard blocks and redirects when false', () {
-    //   final guard = DummyGuard(false);
-    //   final state = RouteState(
-    //     path: '/home',
-    //     queryParams: {},
-    //     fragment: '',
-    //     arguments: null,
-    //   );
-    //   expect(guard.redirect(state), '/login');
-    // });
-
-    // group('AuthenticatedRedirectGuard', () {
-    //   test('Redirects to /main when authenticated', () {
-    //     DummyUserPrefs.isAuthenticated = true;
-    //     final guard = AuthenticatedRedirectGuard();
-    //     final state = RouteState(
-    //       path: AppRouter.initialRoute,
-    //       queryParams: {},
-    //       fragment: '',
-    //       arguments: null,
-    //     );
-    //     expect(guard.redirect(state), '/main');
-    //   });
-
-    //   test('Allows access when not authenticated', () {
-    //     DummyUserPrefs.isAuthenticated = false;
-    //     final guard = AuthenticatedRedirectGuard();
-    //     final state = RouteState(
-    //       path: '/',
-    //       queryParams: {},
-    //       fragment: '',
-    //       arguments: null,
-    //     );
-    //     expect(guard.redirect(state), isNull);
-    //   });
-  });
-
-  group('PasswordChangeProgressGuard', () {
-    //   test('Allows if email argument is present', () {
-    //     final guard = PasswordChangeProgressGuard();
-    //     final state = RouteState(
-    //       path: '/password-change',
-    //       queryParams: {},
-    //       fragment: '',
-    //       arguments: {'email': 'test@example.com'},
-    //     );
-    //     expect(guard.redirect(state), isNull);
-    //   });
-
-    //   test('Allows if local passwordChange progress exists', () {
-    //     DummyUserPrefs.passwordChange = {'step': 1};
-    //     final guard = PasswordChangeProgressGuard();
-    //     final state = RouteState(
-    //       path: '/password-change',
-    //       queryParams: {},
-    //       fragment: '',
-    //       arguments: {},
-    //     );
-    //     expect(guard.redirect(state), isNull);
-    //     DummyUserPrefs.passwordChange = null;
-    //   });
-
-    //   test('Redirects to / when no progress or email', () {
-    //     DummyUserPrefs.passwordChange = null;
-    //     final guard = PasswordChangeProgressGuard();
-    //     final state = RouteState(
-    //       path: '/password-change',
-    //       queryParams: {},
-    //       fragment: '',
-    //       arguments: {},
-    //     );
-    //     expect(guard.redirect(state), AppRouter.initialRoute);
-    //   });
-    // });
-  });
+  // Guard-specific behavior is covered in app_router_guard_test.dart
 
   group('AppRouter static helper methods', () {
     group('isNearMatch', () {
@@ -303,7 +230,7 @@ void main() {
       expect(state.path, '/page');
       expect(state.queryParams, containsPair('query', 'test'));
       expect(state.fragment, 'frag');
-      expect(state.arguments, containsPair('some', 'data'));
+      expect(state.arguments as Map<String, Object?>, containsPair('some', 'data'));
     });
 
     group('matchRoute', () {
@@ -365,7 +292,7 @@ void main() {
       expect(result.state.uriParams, isNull);
       expect(result.state.queryParams, isEmpty);
       expect(result.state.fragment, 'section1');
-      expect(result.state.arguments, containsPair('foo', 'bar'));
+      expect(result.state.arguments as Map<String, Object?>, containsPair('foo', 'bar'));
       expect(result.match, isNull);
       expect(result.isNear, isFalse);
     });
@@ -453,7 +380,7 @@ void main() {
       expect(state.uriParams, isNull);
       expect(state.queryParams, isEmpty);
       expect(state.fragment, 'section1');
-      expect(state.arguments, containsPair('foo', 'bar'));
+      expect(state.arguments as Map<String, Object?>, containsPair('foo', 'bar'));
     });
 
     test('buildRouteState parses multiple query parameters correctly', () {
