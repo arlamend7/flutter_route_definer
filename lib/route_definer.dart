@@ -11,7 +11,6 @@ export 'src/route_state.dart';
 export 'src/global_route_definer.dart';
 export 'src/route_options.dart';
 export 'src/current_route.dart';
-export 'src/deafault_guard_handler_page.dart';
+export 'widgets/route_loader_widget.dart';
 export 'src/title_observer.dart';
-export 'navigations/title_updater_stub.dart'
-    if (dart.library.html) 'navigations/title_updater.dart';
+export 'navigations/title_updater_stub.dart' if (dart.library.html) 'navigations/title_updater.dart';
