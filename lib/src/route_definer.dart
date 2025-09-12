@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:route_definer/route_definer.dart';
-import 'package:route_definer/src/current_route.dart';
 
 /// Defines a single route in the app with its path, widget builder,
 /// authorization requirement, and optional guards.

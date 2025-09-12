@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:route_definer/route_definer.dart';
-import 'package:route_definer/src/current_route.dart';
 
 /// A guard that can optionally block navigation.
 class DummyGuard implements RouteGuard {
