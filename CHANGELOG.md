@@ -46,3 +46,7 @@
 
 ## [2.0.1] - 2025-08-30
 - Downgraded `web` dependency and allowed any version for maximum adaptability.
+
+
+## [2.0.3] - 2025-08-30
+- Downgraded `web` dependency and allowed any version for maximum adaptability.

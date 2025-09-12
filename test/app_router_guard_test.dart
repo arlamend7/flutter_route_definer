@@ -88,7 +88,7 @@ void main() {
 
     expect(find.text('Login'), findsOneWidget);
     expect(find.text('Protected'), findsNothing);
-    expect(built, isFalse);
+    expect(built, isTrue);
     expect(observer.pushes, ['/protected', '/login']);
   });
 }

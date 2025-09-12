@@ -32,10 +32,7 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: AppRouter.onGenerateRoute,
       onUnknownRoute: AppRouter.onUnknownRoute,
       navigatorObservers: [
-        TitleObserver(
-            appTitle: (appName, routeName) => (routeName?.isEmpty ?? true)
-                ? appName
-                : "$appName | $routeName")
+        TitleObserver(appTitle: TitleObserver.defaultTitleGenerator)
       ],
     );
   }
