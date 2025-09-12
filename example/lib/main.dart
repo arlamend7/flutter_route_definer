@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:route_definer/route_definer.dart';
-import 'package:route_definer/src/title_observer.dart';
 
 void main() {
   AppRouter.init(

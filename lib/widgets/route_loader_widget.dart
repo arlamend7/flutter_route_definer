@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:route_definer/src/current_route.dart';
+import 'package:route_definer/route_definer.dart';
 
 /// Widget that handles route guards and optional authentication before
 /// displaying the final page to the user.
