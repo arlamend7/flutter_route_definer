@@ -13,6 +13,7 @@ RouteDefiner<T> page<T>(String path) => RouteDefiner<T>(
 
 RouteDefinerRouter makeRouter(List<RouteDefiner<dynamic>> routes,
         {String initialRoute = '/',
+        int redirectLimit = 8,
         Duration? timeout,
         void Function(RouteFailure)? onError,
         Listenable? refresh}) =>
@@ -25,6 +26,7 @@ RouteDefinerRouter makeRouter(List<RouteDefiner<dynamic>> routes,
       refreshListenable: refresh,
       restorationScopeId: 'navigator',
       initialRoute: initialRoute,
+      redirectLimit: redirectLimit,
       appTitle: 'Test',
       resolutionTimeout: timeout,
       onError: onError,
@@ -171,6 +173,47 @@ void main() {
     expect(tester.takeException(), isNull);
     await unmount(tester, router);
   });
+
+  for (final loop in [true, false]) {
+    testWidgets(
+        'retry restarts ${loop ? 'loop' : 'limit'} failures with a fresh trace',
+        (tester) async {
+      var recover = false;
+      var calls = 0;
+      final errors = <RouteFailure>[];
+      final router = makeRouter([
+        RouteDefiner<void>(
+          path: '/:step',
+          guards: [
+            (current) {
+              calls++;
+              final step = current.state.pathInt('step');
+              if (recover && step >= 2) return const RouteDecision.allow();
+              return RouteDecision.redirect(
+                  '/${loop ? (recover ? 2 : step) : step + 1}');
+            },
+          ],
+          builder: (_, state) => Text('Ready: ${state.path}'),
+        ),
+      ], initialRoute: '/0', redirectLimit: 1, onError: errors.add);
+      await mount(tester, router);
+      expect(errors.single.error, isA<RouteRedirectException>());
+      final beforeRetry = calls;
+      // An unchanged application still gets a bounded, reported failure.
+      await tester.tap(find.text('Retry'));
+      await tester.pumpAndSettle();
+      expect(calls, greaterThan(beforeRetry));
+      expect(errors, hasLength(2));
+      recover = true;
+      await tester.tap(find.text('Retry'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Ready:'), findsOneWidget);
+      expect(find.text('Retry'), findsNothing);
+      expect(errors, hasLength(2));
+      expect(tester.takeException(), isNull);
+      await unmount(tester, router);
+    });
+  }
 
   testWidgets('failures can retry and refresh rechecks authorization',
       (tester) async {
@@ -479,10 +522,15 @@ void main() {
       'restored argument changes recheck a reused page without losing its result',
       (tester) async {
     final checked = <Object?>[];
+    final titled = <Object?>[];
     final router = makeRouter([
       page<void>('/'),
       RouteDefiner<int>(
           path: '/item',
+          title: (state) {
+            titled.add(state.arguments);
+            return 'Item: ${state.arguments}';
+          },
           guards: [
             (current) {
               checked.add(current.state.arguments);
@@ -503,6 +551,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Arguments: after'), findsOneWidget);
     expect(checked, ['before', 'after']);
+    expect(titled.last, 'after');
     expect(router.currentConfiguration.locations.last.id,
         previous.locations.last.id);
     await router.pop<int>(9);

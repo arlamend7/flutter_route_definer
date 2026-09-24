@@ -134,6 +134,11 @@ try {
   assert.equal(state.history.at(-1).from, '/item/8');
   assert.deepEqual(state.stack, ['/', '/item/42?tag=a&tag=b#details']);
   assert.deepEqual(state.inspectionStack, state.stack);
+  const restoredIds = state.ids;
+  await command('restoreArguments');
+  state = await until(s => s.title === 'Restored title');
+  assert.deepEqual(state.ids, restoredIds);
+  assert.equal(state.arguments.title, 'Restored title');
   const historyLength = await evaluate('history.length');
   await command('replace', '/other');
   state = await until(s => s.title === 'Other /other');
@@ -154,7 +159,7 @@ try {
   assert.deepEqual(exceptions, []);
   console.log(JSON.stringify({
     mode: expectedWasm ? 'wasm' : 'javascript', browser: version.product,
-    passed: ['push', 'URL', 'title', 'back', 'forward', 'identity', 'arguments', 'reload', 'typed pop', 'remove', 'replace', 'redirect', 'direct entry', 'current route', 'stack snapshots', 'event history', 'redacted diagnostics'], state
+    passed: ['push', 'URL', 'title', 'back', 'forward', 'identity', 'arguments', 'reload', 'typed pop', 'remove', 'restored title', 'replace', 'redirect', 'direct entry', 'current route', 'stack snapshots', 'event history', 'redacted diagnostics'], state
   }, null, 2));
   await call('Browser.close');
 } finally {

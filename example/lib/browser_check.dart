@@ -18,7 +18,13 @@ void main() {
   late final RouteDefinerRouter router;
   RouteDefiner<T> page<T>(String path, String title) => RouteDefiner<T>(
         path: path,
-        title: (state) => '$title ${state.uri}',
+        title: (state) {
+          final arguments = state.arguments;
+          if (arguments is Map && arguments['title'] is String) {
+            return arguments['title'] as String;
+          }
+          return '$title ${state.uri}';
+        },
         builder: (_, state) {
           built.add(state.uri.toString());
           return Scaffold(body: Text(state.uri.toString()));
@@ -61,6 +67,14 @@ void main() {
             router.replace(command['uri'] as String);
           case 'pop':
             unawaited(router.pop<int>(42));
+          case 'restoreArguments':
+            final locations = router.currentConfiguration.locations;
+            unawaited(router.setNewRoutePath(RouteStack([
+              ...locations.take(locations.length - 1),
+              RouteLocation(locations.last.uri,
+                  id: locations.last.id,
+                  arguments: {'title': 'Restored title'}),
+            ])));
           case 'remove':
             router.remove(router.currentRoute.id);
         }

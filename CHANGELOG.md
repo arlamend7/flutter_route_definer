@@ -1,5 +1,7 @@
 ## 3.0.0
 
+- Retry redirect-loop and redirect-limit failures with a fresh guard attempt. Refresh argument-dependent titles when restoration reuses a page, invalidating pending stale titles. Add guard retry and restored browser-title regressions.
+
 - Add declarative `router.remove(id)` for portable page removal on older Flutter SDKs. Keep native-removal integration tests on SDKs that permit that Flutter API. Diagnose Chrome startup failures, wait for complete port-file contents, and test startup timeouts/early exits.
 
 - Fix Flutter 3.27/3.32 annotation imports by declaring `meta` directly. Observe native page removals even when Flutter omits `onDidRemovePage`, preserving the stack and pending results on Flutter 3.47. Wait for Chrome shutdown and retry temporary-profile cleanup in browser checks. Require the full pana pub-point score in release validation.

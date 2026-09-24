@@ -69,6 +69,14 @@ class TitleObserver extends NavigatorObserver {
     if (next != null) unawaited(_update(next.settings, generation));
   }
 
+  /// Invalidates pending titles and reads restored settings after Navigator
+  /// has applied the new pages, including arguments on a reused route.
+  void refreshAfterBuild() {
+    if (_disposed) return;
+    _generation++;
+    WidgetsBinding.instance.addPostFrameCallback((_) => refresh(force: true));
+  }
+
   bool _isCurrent(int generation) =>
       !_disposed &&
       generation == _generation &&

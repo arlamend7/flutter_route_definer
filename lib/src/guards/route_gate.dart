@@ -16,6 +16,7 @@ class RouteGate extends StatefulWidget {
     required this.router,
     required this.onRedirect,
     this.failure,
+    this.onRetryFailure,
     this.onGuardResult,
     this.onFailure,
   });
@@ -24,6 +25,7 @@ class RouteGate extends StatefulWidget {
   final RouteDefinerRouter router;
   final void Function(RedirectNavigation) onRedirect;
   final RouteFailure? failure;
+  final VoidCallback? onRetryFailure;
   final void Function(int, RouteDecision)? onGuardResult;
   final void Function(RouteFailure, int?)? onFailure;
 
@@ -181,7 +183,13 @@ class _RouteGateState extends State<RouteGate> {
   }
 
   void _retry() {
-    if (_active) setState(_reset);
+    if (!_active) return;
+    final retryFailure = widget.onRetryFailure;
+    if (retryFailure != null) {
+      retryFailure();
+    } else {
+      setState(_reset);
+    }
   }
 
   @override

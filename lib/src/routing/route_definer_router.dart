@@ -36,8 +36,9 @@ class _RedirectTrace {
 class _Entry {
   _Entry(this.location, this.trace, {this.failure});
   RouteLocation location;
-  final _RedirectTrace trace;
-  final Object? failure;
+  _RedirectTrace trace;
+  Object? failure;
+  int retry = 0;
   final Completer<Object?> result = Completer<Object?>();
 
   void complete([Object? value]) {
@@ -298,7 +299,7 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
   Widget _gate(
           RouteDefiner<dynamic> definition, RouteState state, _Entry entry) =>
       RouteGate(
-        key: ValueKey((entry.location.id, _refresh)),
+        key: ValueKey((entry.location.id, _refresh, entry.retry)),
         definition: definition,
         routeState: state,
         router: this,
@@ -308,6 +309,18 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
                 error: entry.failure!,
                 stackTrace: StackTrace.current,
                 state: state),
+        onRetryFailure: entry.failure is RouteRedirectException
+            ? () {
+                if (_disposed || !_entries.contains(entry)) return;
+                // Keep page identity and its pending result while starting a
+                // new bounded attempt at the failed destination.
+                entry.failure = null;
+                entry.trace =
+                    _RedirectTrace(this, [entry.location.uri.toString()]);
+                entry.retry++;
+                notifyListeners();
+              }
+            : null,
         onGuardResult: (index, decision) {
           if (_observing && _entries.contains(entry)) {
             _record(NavigationAction.guardResult,
@@ -507,6 +520,7 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
       _replaceStack(entries);
     }
     _record(NavigationAction.restore, source: source, subject: _entries.last);
+    _titleObserver?.refreshAfterBuild();
     notifyListeners();
     return SynchronousFuture(null);
   }
