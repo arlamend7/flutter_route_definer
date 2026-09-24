@@ -229,10 +229,10 @@ void main() {
     await mount(tester, router);
     final removedResult = router.push<int>('/items/1');
     await tester.pumpAndSettle();
-    final native = ModalRoute.of(tester.element(find.text('/items/1')))!;
+    final removedId = router.currentRoute.id;
     final replacedResult = router.push<int>('/items/2');
     await tester.pumpAndSettle();
-    router.navigatorKey.currentState!.removeRoute(native);
+    expect(router.remove(removedId), isTrue);
     await tester.pumpAndSettle();
     final removed = router.history.last;
     expect(removed.action, NavigationAction.remove);
@@ -255,6 +255,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(reset.action, NavigationAction.reset);
     expect(paths(reset.stack), ['/']);
+    expect(router.history.last, same(reset));
+    expect(router.remove(removedId), isFalse);
+    expect(router.remove(router.currentRoute.id), isFalse);
     expect(router.history.last, same(reset));
     expect(paths(removed.stack), ['/', '/items/2']);
     await unmount(tester, router);
@@ -290,7 +293,7 @@ void main() {
     expect(paths(router.stack), ['/', '/items/2']);
     expect(router.history.last, same(previous));
     await unmount(tester, router);
-  });
+  }, tags: 'native-page-removal');
 
   test(
       'history is optional, bounded and ordered; invalid calls create no events',

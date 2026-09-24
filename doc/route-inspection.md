@@ -90,7 +90,8 @@ Each event contains its action, source and destination managed pages, affected `
 | Successful managed pop | Removes that page immediately when the typed Page callback confirms success; one `pop`, without waiting for the outgoing animation. Typed results still complete normally. |
 | Pop veto, pageless/dialog pop | No managed-stack event or fabricated successful pop. |
 | `replace` | Replaces the top entry; one `replace`, retaining the old top as `source`. Framework cleanup does not generate extra removal events. |
-| Imperative removal of a managed page | `remove` when Flutter reports removal; `route` identifies the removed page. Removing below the top leaves source/destination at the same active page. |
+| `router.remove(snapshot.id)` | Removes a managed page declaratively on every supported SDK, completes its pending push with null, and records one `remove`. Unknown IDs and removal of the sole remaining page return false without an event. |
+| Imperative removal of a managed page on SDKs that allow it | `remove` when Flutter reports removal; `route` identifies the removed page. Removing below the top leaves source/destination at the same active page. |
 | Guard redirect | `guardResult` with redirect outcome, followed by `redirect` when replacement commits. Redirect loops/limits become `failure` events. |
 | `go` | Rebuilds registered ancestors and the final destination; one `reset`, not synthetic pop/push events for every replaced page. |
 | External URI/history/restoration update | One `restore` with the resulting stack, retaining matching page IDs. The callback does not reliably identify Back versus Forward, reload, deep link or other configuration updates. |
@@ -98,7 +99,7 @@ Each event contains its action, source and destination managed pages, affected `
 | Completed valid guard | `guardResult` for each executed guard, with its zero-based index and allow/deny/redirect outcome. Later guards do not run after a terminal result. |
 | Guard exception, timeout, navigation-resolution failure | One `failure` per reported attempt; retry can produce new outcomes. Screen-builder exceptions remain ordinary Flutter errors. |
 
-Rejected programmatic input throws before mutation and is not recorded as a completed navigation. Late results from cancelled, covered or removed attempts are ignored. These events describe model changes and resolved checks, not completed animations, gesture progress or completed rendering. Direct imperative replacement of a managed native Route outside the router's API is not a supported way to change its declarative stack. Use router APIs; pageless activity can be observed separately with Flutter's NavigatorObserver. Force-removing or force-popping the last native route from a root-only stack is unsupported.
+Rejected programmatic input throws before mutation and is not recorded as a completed navigation. Late results from cancelled, covered or removed attempts are ignored. These events describe model changes and resolved checks, not completed animations, gesture progress or completed rendering. Flutter 3.27/3.32 reject native `Navigator.removeRoute` for declarative pages; use `router.remove(id)` for portable removal. The extra native-removal integration is tested on 3.41/3.47. Direct imperative replacement of a managed native Route outside the router's API is not a supported way to change its declarative stack. Use router APIs; pageless activity can be observed separately with Flutter's NavigatorObserver. Force-removing or force-popping the last native route from a root-only stack is unsupported.
 
 ## Built-in diagnostics
 

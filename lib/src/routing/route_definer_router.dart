@@ -436,6 +436,19 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
     return navigator == null ? false : await navigator.maybePop<T>(result);
   }
 
+  /// Removes a managed page by snapshot ID, completing its push with null.
+  ///
+  /// Updates the declarative stack and replaces the browser history entry.
+  /// Returns false for an unknown ID or the sole remaining page. This is not a
+  /// pop attempt and does not consult PopScope. Throws after disposal.
+  bool remove(String id) {
+    _checkAlive();
+    final matches = _entries.where((entry) => entry.location.id == id);
+    if (matches.isEmpty || _entries.length == 1) return false;
+    _removeEntry(matches.first, NavigationAction.remove);
+    return true;
+  }
+
   void _replaceStack(List<_Entry> entries) {
     for (final old in _entries) {
       if (!entries.contains(old)) old.complete();

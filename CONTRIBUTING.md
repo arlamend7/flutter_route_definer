@@ -25,6 +25,10 @@ node tool/browser_check.mjs example/build/web wasm
 
 The harness uses a temporary profile, local server and real browser Back/Forward/reload. It checks actual Wasm execution, title changes, direct entry, serialized arguments, page identity, redirects, typed results, current-route/stack snapshots, event history and log redaction. It does not access your normal browser profile.
 
+Flutter 3.27/3.32 prohibit direct `Navigator.removeRoute` on declarative pages. Their CI cells run `flutter test --no-pub --exclude-tags native-page-removal`; every portable `router.remove` regression still runs. The single extra native-removal integration runs on 3.41/3.47. Do not exclude other tests to hide regressions.
+
+Run `node --test tool/browser_startup_test.mjs` for browser-startup regressions. The harness waits up to 30 seconds for a complete debugging endpoint, reports early exit/spawn failures with bounded Chrome stderr, and fails on startup or navigation errors. CI also avoids limited `/dev/shm` storage.
+
 Run `flutter pub downgrade` and repeat analysis/tests to check lower dependency bounds; run it separately in `example` for example builds. Restore normal resolution with `flutter pub upgrade` afterward. SDK constraints are promises: do not raise them or add dependencies without checking migration impact. CI covers the minimum, intermediate and current pinned stable SDKs. Update the pinned current version deliberately and retain the minimum check.
 
 ## Pub points

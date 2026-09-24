@@ -28,7 +28,12 @@ jobs:
       - run: flutter pub ${{ matrix.dependencies }}
         working-directory: example
       - run: flutter analyze --no-pub
-      - run: flutter test --no-pub
+      - name: Test portable routing on older SDKs
+        if: matrix.flutter == '3.27.0' || matrix.flutter == '3.32.8'
+        run: flutter test --no-pub --exclude-tags native-page-removal
+      - name: Test routing and native page removal
+        if: matrix.flutter != '3.27.0' && matrix.flutter != '3.32.8'
+        run: flutter test --no-pub
       - run: flutter test --no-pub
         working-directory: example
       - if: matrix.flutter == '3.41.6' && matrix.dependencies == 'get'
@@ -50,6 +55,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Test browser startup handling
+        run: node --test tool/browser_startup_test.mjs
       - run: flutter pub ${{ matrix.dependencies }}
       - run: flutter pub ${{ matrix.dependencies }}
         working-directory: example

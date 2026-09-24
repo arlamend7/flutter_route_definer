@@ -27,3 +27,10 @@ The logs from [PR #12's initial validation run](https://github.com/arlamend7/flu
 3. **Flutter 3.47.5 browser checks:** the navigation assertions passed, but deleting Chrome's temporary profile raised `ENOTEMPTY`. The harness now waits for graceful shutdown, bounds the wait, and retries asynchronous deletion while subprocesses release files. Navigation assertion failures still fail the job.
 
 The patched SDK matrix must be rerun before release. Other SDKs could not be installed locally: official macOS archive URLs returned 404, and the alternate distribution mirror returned 403. No passing patched GitHub run, native gesture test, merge or publication is claimed here.
+
+## Follow-up pipeline failures
+
+[Validation run 2](https://github.com/arlamend7/flutter_route_definer/actions/runs/35949356136) passed both 3.41/3.47 test resolutions, the package job and three browser jobs. The remaining failures have different causes:
+
+- Flutter 3.27/3.32 prohibit imperative removal of declarative pages before callbacks run. Three tests called that unsupported native API, leaving Navigator locked and causing two subsequent cleanup failures. Portable removal now uses `router.remove(id)` and remains tested in every matrix cell. One additional `native-page-removal` integration test is restricted to the tested 3.41/3.47 SDKs; native removal on older SDKs is explicitly unsupported.
+- The 3.27 downgrade browser job timed out before Chrome wrote `DevToolsActivePort`. Because stderr was discarded, that log cannot distinguish slow startup from a browser crash. Startup now allows 30 seconds, checks complete port-file contents, detects early exits/spawn errors, and includes Chrome stderr. Four focused Node tests cover these paths. CI uses `--disable-dev-shm-usage` for Chrome to avoid constrained shared memory. No navigation assertion is suppressed.

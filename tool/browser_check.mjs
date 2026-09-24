@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import { spawn } from 'node:child_process';
+import { waitForDevTools } from './browser_startup.mjs';
 const directory = path.resolve(process.argv[2] || 'example/build/web');
 const expectedWasm = process.argv[3] === 'wasm';
 const chromePath = process.env.CHROME_BIN || (process.platform === 'darwin'
@@ -33,14 +34,14 @@ const base = `http://127.0.0.1:${server.address().port}/`;
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'route-definer-chrome-'));
 const chrome = spawn(chromePath, ['--headless=new', '--no-first-run', '--no-default-browser-check',
   '--enable-unsafe-swiftshader', '--remote-debugging-port=0', '--user-data-dir=' + profile,
-  ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], { stdio: 'ignore' });
+  ...(process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : []), 'about:blank'],
+  { stdio: ['ignore', 'ignore', 'pipe'] });
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 let socket;
 try {
-  const portFile = path.join(profile, 'DevToolsActivePort');
-  for (let i = 0; i < 100 && !fs.existsSync(portFile); i++) await pause(100);
-  const [port, wsPath] = fs.readFileSync(portFile, 'utf8').trim().split('\n');
-  socket = new WebSocket(`ws://127.0.0.1:${port}${wsPath}`);
+  const endpoint = await waitForDevTools(chrome, profile);
+  chrome.stderr.resume();
+  socket = new WebSocket(endpoint);
   await new Promise((resolve, reject) => {
     socket.addEventListener('open', resolve, { once: true });
     socket.addEventListener('error', reject, { once: true });
@@ -125,6 +126,14 @@ try {
   assert.equal(state.history.at(-1).action, 'pop');
   assert.equal(state.history.filter(e => e.action === 'pop').length, 1);
   assert.deepEqual(state.inspectionStack, state.stack);
+  await command('push', '/item/8');
+  await until(s => s.title === 'Item /item/8');
+  await command('remove');
+  state = await until(s => s.selected === -1 && s.title.includes('Item /item/42'));
+  assert.equal(state.history.at(-1).action, 'remove');
+  assert.equal(state.history.at(-1).from, '/item/8');
+  assert.deepEqual(state.stack, ['/', '/item/42?tag=a&tag=b#details']);
+  assert.deepEqual(state.inspectionStack, state.stack);
   const historyLength = await evaluate('history.length');
   await command('replace', '/other');
   state = await until(s => s.title === 'Other /other');
@@ -145,12 +154,12 @@ try {
   assert.deepEqual(exceptions, []);
   console.log(JSON.stringify({
     mode: expectedWasm ? 'wasm' : 'javascript', browser: version.product,
-    passed: ['push', 'URL', 'title', 'back', 'forward', 'identity', 'arguments', 'reload', 'typed pop', 'replace', 'redirect', 'direct entry', 'current route', 'stack snapshots', 'event history', 'redacted diagnostics'], state
+    passed: ['push', 'URL', 'title', 'back', 'forward', 'identity', 'arguments', 'reload', 'typed pop', 'remove', 'replace', 'redirect', 'direct entry', 'current route', 'stack snapshots', 'event history', 'redacted diagnostics'], state
   }, null, 2));
   await call('Browser.close');
 } finally {
   socket?.close(); server.close();
-  if (chrome.exitCode === null && chrome.signalCode === null) {
+  if (chrome.pid !== undefined && chrome.exitCode === null && chrome.signalCode === null) {
     // Let Browser.close finish gracefully; force termination only if needed.
     await new Promise(resolve => {
       const timer = setTimeout(() => chrome.kill('SIGKILL'), 5000);

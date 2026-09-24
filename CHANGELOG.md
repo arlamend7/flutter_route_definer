@@ -1,5 +1,7 @@
 ## 3.0.0
 
+- Add declarative `router.remove(id)` for portable page removal on older Flutter SDKs. Keep native-removal integration tests on SDKs that permit that Flutter API. Diagnose Chrome startup failures, wait for complete port-file contents, and test startup timeouts/early exits.
+
 - Fix Flutter 3.27/3.32 annotation imports by declaring `meta` directly. Observe native page removals even when Flutter omits `onDidRemovePage`, preserving the stack and pending results on Flutter 3.47. Wait for Chrome shutdown and retry temporary-profile cleanup in browser checks. Require the full pana pub-point score in release validation.
 - Add resolved `currentRoute`/`stack` inspection snapshots, asynchronous navigation events, optional bounded history and configurable diagnostics with sensitive fields redacted by default. Existing APIs remain available. Report successful managed pops immediately and distinguish them from removal.
 

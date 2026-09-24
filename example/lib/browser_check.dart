@@ -61,6 +61,8 @@ void main() {
             router.replace(command['uri'] as String);
           case 'pop':
             unawaited(router.pop<int>(42));
+          case 'remove':
+            router.remove(router.currentRoute.id);
         }
         final current = router.currentRoute;
         return jsonEncode({

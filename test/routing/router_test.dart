@@ -469,8 +469,7 @@ void main() {
     await mount(tester, router);
     final result = router.push<int>('/pick');
     await tester.pumpAndSettle();
-    final route = ModalRoute.of(tester.element(find.text('/pick')))!;
-    router.navigatorKey.currentState!.removeRoute(route);
+    expect(router.remove(router.currentRoute.id), isTrue);
     await tester.pumpAndSettle();
     expect(await result, isNull);
     expect(router.currentConfiguration.locations, hasLength(1));

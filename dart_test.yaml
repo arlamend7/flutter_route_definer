@@ -1,0 +1,5 @@
+tags:
+  # Direct Navigator.removeRoute(Page) is rejected by Flutter 3.27/3.32.
+  # Portable router.remove coverage runs on every SDK; this extra integration
+  # test runs on the matrix versions that support native page removal.
+  native-page-removal:

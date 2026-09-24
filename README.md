@@ -127,6 +127,7 @@ Use router methods for pages that should participate in URL synchronization and 
 | `router.push<T>(location, arguments: ...)` | `Future<T?>`; appends one page and adds a browser-history entry. A normal pop returns its result. |
 | `router.go(location, arguments: ...)` | `void`; rebuilds registered ancestors plus the destination and adds history. |
 | `router.replace(location, arguments: ...)` | `void`; replaces the top page and current browser-history entry. |
+| `router.remove(id)` | `bool`; removes the managed page with that snapshot ID and replaces the current browser-history entry. Its pending push completes with `null`. Returns `false` for an unknown ID or the sole remaining page. |
 | `router.pop<T>(result)` | `Future<bool>` from `Navigator.maybePop`; respects `PopScope` and pageless dialogs. `true` means handled, which can include a veto; inspect the stack/events to confirm a page was popped. |
 
 To return a value, first add this item route to the quick start's `routes` list:
@@ -163,6 +164,8 @@ if (selected != null) debugPrint('Selected $selected');
 
 `go('/users/42/edit')` includes `/`, `/users` and `/users/42` only when those ancestors are registered, then includes the final destination even if unmatched. `push` appends only the requested destination.
 
+For removal across every supported SDK, use `router.remove(router.currentRoute.id)` or an ID from `router.stack`. Flutter 3.27/3.32 reject direct `Navigator.removeRoute` calls for declarative pages; native removal observation is an additional integration tested on 3.41/3.47.
+
 For an editor returning an `int`, wrap its content as follows:
 
 ```dart
@@ -172,7 +175,7 @@ const PopScope<int>(
 )
 ```
 
-Set `canPop` from application state and use Flutter's `onPopInvokedWithResult` for feedback. Explicit `go`/`replace` and browser-history updates are not pop attempts and do not ask `PopScope` for permission. Browser unsaved-change handling belongs to the application.
+Set `canPop` from application state and use Flutter's `onPopInvokedWithResult` for feedback. Explicit `go`/`replace`/`remove` and browser-history updates are not pop attempts and do not ask `PopScope` for permission. Browser unsaved-change handling belongs to the application.
 
 ## Define paths and read route state
 
@@ -392,7 +395,7 @@ Events describe committed model changes and guard outcomes, not animation/render
 | Action | Meaning |
 |---|---|
 | `initialize`, `push` | Initial stack or one appended page. Guards may still be pending. |
-| `pop`, `remove` | Successful managed pop, or Flutter-reported managed removal. Pops update immediately; later framework cleanup does not duplicate the event. |
+| `pop`, `remove` | Successful managed pop, `router.remove`, or supported Flutter-reported managed removal. Pops update immediately; later framework cleanup does not duplicate the event. |
 | `replace`, `redirect` | Top/attempted destination replacement; the previous route remains available in the event. |
 | `reset` | `go` replaced the canonical stack; no synthetic event per discarded page. |
 | `restore` | External URI/history/restoration configuration. It cannot reliably distinguish browser Back, Forward or other updates. |
