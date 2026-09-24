@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:flutter/foundation.dart' show internal;
+import 'package:meta/meta.dart' show internal;
 import 'package:route_definer/src/routing/route_definer.dart';
 import 'package:route_definer/src/routing/route_state.dart';
 

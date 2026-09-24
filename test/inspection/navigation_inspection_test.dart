@@ -58,6 +58,30 @@ class CountingList extends ListBase<Object?> {
       throw UnsupportedError('Fixed fixture');
 }
 
+// Exercise removal without relying on Flutter calling onDidRemovePage.
+class ObserverOnlyRemovalRouter extends RouteDefinerRouter {
+  ObserverOnlyRemovalRouter()
+      : super(
+          routes: [page<void>('/'), page<int>('/items/:id')],
+          loadingBuilder: (_) => const SizedBox(),
+          deniedBuilder: (_, __) => const SizedBox(),
+          notFoundBuilder: (_, __) => const SizedBox(),
+          errorBuilder: (_, __, ___) => const SizedBox(),
+          historyLimit: 20,
+        );
+
+  @override
+  Widget build(BuildContext context) {
+    final navigator = super.build(context) as Navigator;
+    return Navigator(
+      key: navigator.key,
+      pages: navigator.pages,
+      observers: navigator.observers,
+      onDidRemovePage: (_) {},
+    );
+  }
+}
+
 void main() {
   test(
       'disabled diagnostics do not traverse snapshot metadata; cancelled listeners stop capture',
@@ -216,6 +240,8 @@ void main() {
     expect(removed.source!.id, removed.destination!.id);
     expect(paths(removed.stack), ['/', '/items/2']);
     expect(await removedResult, isNull);
+    expect(router.history.where((e) => e.action == NavigationAction.remove),
+        hasLength(1));
     router.replace('/other');
     final replaced = router.history.last;
     expect(replaced.action, NavigationAction.replace);
@@ -231,6 +257,38 @@ void main() {
     expect(paths(reset.stack), ['/']);
     expect(router.history.last, same(reset));
     expect(paths(removed.stack), ['/', '/items/2']);
+    await unmount(tester, router);
+  });
+
+  testWidgets('observer synchronizes removal without the page callback',
+      (tester) async {
+    final router = ObserverOnlyRemovalRouter();
+    await mount(tester, router);
+    Object? result = 'pending';
+    unawaited(router.push<int>('/items/1').then((value) => result = value));
+    await tester.pumpAndSettle();
+    final native = ModalRoute.of(tester.element(find.text('/items/1')))!;
+    unawaited(router.push<int>('/items/2'));
+    await tester.pumpAndSettle();
+    router.navigatorKey.currentState!.removeRoute(native);
+    await tester.pumpAndSettle();
+    expect(result, isNull);
+    expect(paths(router.stack), ['/', '/items/2']);
+    expect(router.history.last.action, NavigationAction.remove);
+    expect(router.history.last.route!.state.path, '/items/1');
+    final previous = router.history.last;
+
+    unawaited(showDialog<void>(
+        context: router.navigatorKey.currentContext!,
+        builder: (_) => const AlertDialog(content: Text('Temporary dialog'))));
+    await tester.pumpAndSettle();
+    final dialog =
+        ModalRoute.of(tester.element(find.text('Temporary dialog')))!;
+    router.navigatorKey.currentState!.removeRoute(dialog);
+    await tester.pumpAndSettle();
+    expect(find.text('Temporary dialog'), findsNothing);
+    expect(paths(router.stack), ['/', '/items/2']);
+    expect(router.history.last, same(previous));
     await unmount(tester, router);
   });
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show internal;
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart' show internal;
 import 'package:route_definer/src/guards/route_guard.dart';
 import 'package:route_definer/src/routing/route_options.dart';
 import 'package:route_definer/src/routing/route_pattern.dart';

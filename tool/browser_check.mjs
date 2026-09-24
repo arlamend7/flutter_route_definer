@@ -149,7 +149,14 @@ try {
   }, null, 2));
   await call('Browser.close');
 } finally {
-  socket?.close(); chrome.kill(); server.close();
-  await new Promise(resolve => chrome.exitCode != null ? resolve() : chrome.once('exit', resolve));
-  fs.rmSync(profile, { recursive: true, force: true });
+  socket?.close(); server.close();
+  if (chrome.exitCode === null && chrome.signalCode === null) {
+    // Let Browser.close finish gracefully; force termination only if needed.
+    await new Promise(resolve => {
+      const timer = setTimeout(() => chrome.kill('SIGKILL'), 5000);
+      chrome.once('exit', () => { clearTimeout(timer); resolve(); });
+    });
+  }
+  // Chrome subprocesses can still be releasing files after the parent exits.
+  await fs.promises.rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 }

@@ -50,6 +50,7 @@ Run `flutter pub get`. Import the core API from `package:route_definer/route_def
 |---|---|---|
 | Flutter | `>=3.27.0` | Flutter 3.41.6 |
 | Dart | `>=3.6.0 <4.0.0` | Dart 3.11.4, bundled with that Flutter SDK |
+| `meta` annotations | `^1.15.0` | Imported directly for compatibility with older Flutter SDKs |
 | `web` runtime dependency | `>=0.4.0 <2.0.0` | Normal and minimum dependency resolutions are checked separately |
 
 The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the validation record](doc/validation.md) for results and limitations. Do not add a hosted `^3.0.0` dependency until that version is actually published.
@@ -607,9 +608,9 @@ Version 3 removes static `AppRouter`, `GlobalRouteDefiner`, named-route adapters
 - [Minimal quick start](example/lib/minimal.dart), [full example application](example/lib/main.dart) and [navigation inspector](example/lib/widgets/navigation_inspector.dart)
 - [Inspection investigation, guarantees and event semantics](doc/route-inspection.md)
 - [Platform setup, restoration and custom routes](doc/navigation.md)
-- [Compatibility](doc/compatibility.md) and [executed validation](doc/validation.md)
+- [Compatibility](doc/compatibility.md), [executed validation](doc/validation.md) and [pub points / CI findings](doc/pub-score.md)
 - [Migration](MIGRATION.md), [changelog](CHANGELOG.md), [contribution/release checks](CONTRIBUTING.md) and [security reporting](SECURITY.md)
 - [Performance measurements and their scope](doc/performance.md)
 - [Published API reference](https://arlamend7.github.io/flutter_route_definer/route_definer/) — may describe the preceding release. Run `dart doc --output build/api` for the API in this checkout.
 
-The public libraries are `lib/route_definer.dart` and the optional `lib/default_pages.dart`. Implementation folders group `routing`, `guards`, `inspection`, `titles` and `default_pages`; tests follow the same responsibilities. No extra runtime dependency was added for inspection/history/diagnostics.
+The public libraries are `lib/route_definer.dart` and the optional `lib/default_pages.dart`. Implementation folders group `routing`, `guards`, `inspection`, `titles` and `default_pages`; tests follow the same responsibilities. Inspection/history/diagnostics need no separate logging or tracking package. The direct `meta` dependency supplies annotations without relying on Flutter to re-export them.

@@ -8,8 +8,8 @@ Date: 2026-09-23. Local SDK: Flutter **3.41.6**, Dart **3.11.4**. Host: macOS ar
 |---|---|
 | `dart format --output=none --set-exit-if-changed lib test example/lib example/test tool` | Clean |
 | `flutter analyze --no-pub` | No issues |
-| `flutter test --no-pub` | 57 unit/widget tests pass with normal resolution |
-| `flutter pub downgrade`, then `flutter test --no-pub` | 57 tests pass with the minimum resolution, including web 0.4.0 |
+| `flutter test --no-pub` | 58 unit/widget tests pass with normal resolution |
+| `flutter pub downgrade`, then `flutter test --no-pub` | 58 tests pass with the minimum resolution, including web 0.4.0 |
 | `cd example && flutter test --no-pub` | Example sign-in, typed result, inspector dialog and retry scenario passes |
 | Example `flutter build web --release` | Compiles |
 | Example `flutter build web --release --wasm` | Compiles separately |
@@ -18,6 +18,7 @@ Date: 2026-09-23. Local SDK: Flutter **3.41.6**, Dart **3.11.4**. Host: macOS ar
 | Minimum web 0.4.0 JS/Wasm fixture builds and browser checks | Both pass |
 | `dart doc --output build/api-inspection` | 0 warnings, 0 errors |
 | `dart pub publish --dry-run` from isolated source copy | 0 warnings; no publication |
+| `pana 0.23.19 --exit-code-threshold 0` on the candidate source | 160/160 points, including generated-documentation coverage; see [pub-score findings](pub-score.md) |
 | Workflow/issue YAML syntax | Parsed successfully with Ruby Psych |
 | Local Markdown links | All file targets resolve |
 | `tool/check_release.py` | Rejects wrong version tags and an unreleased changelog |
@@ -29,12 +30,12 @@ Normal runtime dependency resolution uses web 1.1.1; the downgraded run uses web
 
 The working-tree publication dry run warns about uncommitted changes, as expected. An isolated copy of the source was used to distinguish that warning from actual package validation problems. Generated builds/caches, workflow configuration, lock files and root screenshots are excluded from publication. Review the dry-run file list again on the release commit.
 
-The 43 existing regressions passed before inspection changes. The current suite has 57 tests: 14 additional inspection/history/diagnostic tests retain the original coverage and verify the new contracts. Source and tests are grouped by routing, guards, inspection, titles and default pages. The 19 README Dart blocks were extracted, wrapped only where their documented placement requires it, and checked against the current API; temporary analysis files were removed afterward. The quick start matches `example/lib/minimal.dart` exactly, which also compiles as a release web application. Typed results and authentication remain in the dedicated guide sections and full example. The permanent example test also checks its inspector panel.
+The 43 existing regressions passed before inspection changes. The current suite has 58 tests: 15 additional inspection/history/diagnostic tests retain the original coverage and verify the new contracts. Source and tests are grouped by routing, guards, inspection, titles and default pages. The 19 README Dart blocks were extracted, wrapped only where their documented placement requires it, and checked against the current API; temporary analysis files were removed afterward. The quick start matches `example/lib/minimal.dart` exactly, which also compiles as a release web application. Typed results and authentication remain in the dedicated guide sections and full example. The permanent example test also checks its inspector panel.
 
 ## Important regressions covered
 
 - Current-route metadata and stack snapshots expose independent read-only collection values; history retains bounded events after pages leave the stack.
-- Pop events are immediate and not duplicated by framework cleanup; removal below the top preserves the active route and identifies the removed subject.
+- Pop events are immediate and not duplicated by framework cleanup; removal below the top preserves the active route and identifies the removed subject. A regression disables the page-removal callback and verifies observer-based reconciliation, result completion and exclusion of pageless removals.
 - Event streams are asynchronous, independent of history retention and closed on disposal. Dialogs and independent child routers stay outside each other's managed stacks.
 - Guard outcomes, redirect loops, timeout failures and late cancellations are observed without false success events. Default logging redacts dynamic values; custom logging failures cannot change navigation outcomes. Disabled capture does not traverse metadata.
 - Required application-selected loading, denied, not-found and error builders are exercised. Guard denial and exceptions cannot build protected content.
@@ -50,6 +51,6 @@ The 43 existing regressions passed before inspection changes. The current suite 
 
 ## Remaining release gates
 
-The minimum SDK (3.27.0), intermediate 3.32.8 and current stable 3.47.5 were not executable locally: official SDK archive/manifest requests returned HTTP 404. Required APIs were verified in Flutter 3.27.0's official source, but this does not establish compilation. The added exact-version CI matrix must pass before release.
+The minimum SDK (3.27.0), intermediate 3.32.8 and current stable 3.47.5 were not executable locally: official SDK archive/manifest requests returned HTTP 404. The initial GitHub matrix did execute these SDKs and exposed three failures: missing annotation re-exports on 3.27/3.32, native removal callbacks on 3.47, and a Chrome profile-cleanup race. The source, regression coverage and harness now address those causes. The patched exact-version matrix must be rerun before release; source inspection and local tests do not establish that it passes. See [the CI and scoring findings](pub-score.md).
 
-Physical Android predictive-back, iOS swipe-back/universal links, native desktop builds, standalone material_ui/cupertino_ui integration, Firefox/Safari, assistive technology, retained heap and device AOT frame measurements remain unverified. See [compatibility](compatibility.md), [performance](performance.md) and [the release checklist](../CONTRIBUTING.md). No successful GitHub CI run is claimed by this local session.
+Physical Android predictive-back, iOS swipe-back/universal links, native desktop builds, standalone material_ui/cupertino_ui integration, Firefox/Safari, assistive technology, retained heap and device AOT frame measurements remain unverified. See [compatibility](compatibility.md), [performance](performance.md) and [the release checklist](../CONTRIBUTING.md). No successful complete patched GitHub CI run is claimed by this local session.

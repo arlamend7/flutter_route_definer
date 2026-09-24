@@ -2,7 +2,7 @@
 
 History and diagnostics are disabled by default. Enabled history keeps a bounded number of events, each with stack snapshots; payload size and stack depth still affect memory. Disabled capture skips timestamps, snapshot traversal and formatting (covered by a regression).
 
-The matcher precompiles validated segment patterns once and parses an incoming URI once per lookup. Matching remains linear in the number of definitions, preserving declaration-order precedence. There is no code generator, trie, route cache or additional runtime dependency beyond Flutter and package:web.
+The matcher precompiles validated segment patterns once and parses an incoming URI once per lookup. Matching remains linear in the number of definitions, preserving declaration-order precedence. There is no code generator, trie, route cache or routing-engine dependency beyond Flutter. `web` supplies browser integration and `meta` supplies annotations.
 
 ## Executed matching benchmark
 

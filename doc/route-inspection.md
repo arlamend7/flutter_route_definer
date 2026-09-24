@@ -8,7 +8,7 @@ The router already implements `Listenable` through `ChangeNotifier`: `addListene
 
 Missing pieces were a direct current-route inspection API, resolved stack snapshots, an event history that survives pop/replacement, and built-in configurable diagnostics. `observers: [...]` already accepts Flutter Navigator observers, which can observe native routes/dialogs but cannot explain guard outcomes or reliably identify the intent of declarative changes such as `go` and redirects. A debug guard alone misses completed stack mutations. Also, the existing stack removed a popped entry only after its outgoing transition finished; the typed page callback can identify a successful pop sooner and distinguish it from removal.
 
-The compatible solution keeps existing APIs and adds instance-level snapshots and a single optional event mechanism. It uses the router's mutations, typed Page pop callback and existing guard lifecycle. No global registry, extra dependency, polling or second guard API is needed. History and logging are off by default. The scope is managed pages belonging to one router, not every route visible anywhere in the application or the browser's complete session history.
+The compatible solution keeps existing APIs and adds instance-level snapshots and a single optional event mechanism. It uses the router's mutations, typed Page pop callback, a native removal observer and the existing guard lifecycle. The observer handles SDKs that do not call `onDidRemovePage` for `removeRoute`; duplicate notifications are ignored. No global registry, extra dependency, polling or second guard API is needed. History and logging are off by default. The scope is managed pages belonging to one router, not every route visible anywhere in the application or the browser's complete session history.
 
 ## Current route and stack
 
@@ -120,7 +120,7 @@ RouteDefinerRouter(
 
 Each log is a JSON line containing action, source, destination, subject and resulting stack, plus guard/redirect/failure details when present. By default, route labels are registered patterns such as `/items/:id`; unmatched concrete paths and redirect destinations are redacted. Registered patterns themselves are logged and must not contain secrets. No payload `toString` is called merely to log a redacted field. Error type is included, but its message/stack requires `includeErrorDetails`. The custom logger receives only the formatted/redacted string. `NavigationEvent.toString()` also omits sensitive values. Exceptions from logging callbacks are ignored so logging cannot turn an allowed route into a failure.
 
-Logging is off when `diagnostics` is null, including in release mode. Explicitly enabling it enables it in any build; use `kDebugMode ? NavigationDiagnostics(...) : null` for development-only output, as the example does. When no history, logger or stream listener is enabled, event capture returns before timestamps, matching, snapshot copying or formatting. No extra runtime dependency is introduced.
+Logging is off when `diagnostics` is null, including in release mode. Explicitly enabling it enables it in any build; use `kDebugMode ? NavigationDiagnostics(...) : null` for development-only output, as the example does. When no history, logger or stream listener is enabled, event capture returns before timestamps, matching, snapshot copying or formatting. No separate logging/tracking package is used; `meta` is declared directly for annotations and is already a Flutter dependency.
 
 ## Verification and limits
 

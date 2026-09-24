@@ -45,6 +45,19 @@ class _Entry {
   }
 }
 
+class _RemovalObserver extends NavigatorObserver {
+  _RemovalObserver(this.onRemove);
+
+  final void Function(Page<dynamic>) onRemove;
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    // Some Flutter versions do not call onDidRemovePage for removeRoute.
+    final settings = route.settings;
+    if (settings is Page<dynamic>) onRemove(settings);
+  }
+}
+
 /// One instance-owned route table and Navigator stack.
 ///
 /// Keep an instance outside build and pass config to MaterialApp.router.
@@ -142,6 +155,8 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
   PlatformRouteInformationProvider? _provider;
   RouterConfig<RouteStack>? _config;
   TitleObserver? _titleObserver;
+  late final NavigatorObserver _removalObserver =
+      _RemovalObserver(_didRemovePage);
 
   List<RouteDefiner<dynamic>> get routes => _registry.routes;
 
@@ -436,6 +451,13 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
     }, replace: true, subject: entry);
   }
 
+  void _didRemovePage(Page<dynamic> page) {
+    final removed =
+        _entries.where((entry) => ValueKey(entry.location.id) == page.key);
+    if (removed.isEmpty) return;
+    _removeEntry(removed.first, NavigationAction.remove);
+  }
+
   @override
   Future<void> setNewRoutePath(RouteStack configuration) {
     _checkAlive();
@@ -508,13 +530,9 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
       key: navigatorKey,
       restorationScopeId: restorationScopeId,
       pages: [for (final entry in _entries) _page(entry)],
-      onDidRemovePage: (page) {
-        final removed =
-            _entries.where((entry) => ValueKey(entry.location.id) == page.key);
-        if (removed.isEmpty) return;
-        _removeEntry(removed.first, NavigationAction.remove);
-      },
+      onDidRemovePage: _didRemovePage,
       observers: [
+        _removalObserver,
         _titleObserver ??= TitleObserver(router: this),
         ..._observers,
       ],

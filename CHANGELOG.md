@@ -1,5 +1,6 @@
 ## 3.0.0
 
+- Fix Flutter 3.27/3.32 annotation imports by declaring `meta` directly. Observe native page removals even when Flutter omits `onDidRemovePage`, preserving the stack and pending results on Flutter 3.47. Wait for Chrome shutdown and retry temporary-profile cleanup in browser checks. Require the full pana pub-point score in release validation.
 - Add resolved `currentRoute`/`stack` inspection snapshots, asynchronous navigation events, optional bounded history and configurable diagnostics with sensitive fields redacted by default. Existing APIs remain available. Report successful managed pops immediately and distinguish them from removal.
 
 - Add instance-owned `RouteDefinerRouter`, `RouterConfig`, typed pages/results, browser history, full URI state, stack serialization and Flutter restoration support.

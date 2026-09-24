@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:meta/meta.dart' show internal;
 import 'package:route_definer/src/inspection/navigation_event.dart';
 import 'package:route_definer/src/inspection/route_snapshot.dart';
 
