@@ -1,100 +1,71 @@
-# Migrating from 1.2.2 to 2.0.0
+# Migrating to 3.0
 
-Version 2.0.0 introduces several breaking changes and new capabilities. This guide describes how to update an application built on 1.2.2 to the new APIs.
+This is an unpublished breaking release. It removes overlapping APIs and compatibility wrappers. Flutter >=3.27 and Dart >=3.6 are declared requirements; see [executed validation](doc/validation.md) before release.
 
-## Guard API
+## One setup
 
-- `RouteGuard.redirect(RouteState)` has been replaced with the asynchronous `RouteGuard.check(CurrentRoute)`.
-- Guards no longer return a redirect path. Perform navigation inside `check` using the provided `BuildContext`.
-- A new `CurrentRoute` object exposes `context`, `route`, and `state` for guards and loaders.
+Create a `RouteDefinerRouter`, pass its `config` to `MaterialApp.router`, keep it outside `build`, and dispose it with its owner. Configure everything directly on the router. Follow the complete [quick start](README.md#quick-start) or [runnable example](example/lib/main.dart).
 
-**Before**
+| Removed API | Replacement |
+|---|---|
+| Static `AppRouter` and `GlobalRouteDefiner` | One explicitly owned `RouteDefinerRouter` |
+| Named-route callbacks and `Navigator.pushNamed` integration | `router.push<T>`, `go`, `replace`, `pop<T>` |
+| `isAuthorized`, `beforeEnter`, class-based `RouteGuard.check` | Function-based `guards: [...]` returning `RouteDecision` |
+| `current.redirect(...)` and thrown redirects | Return `RouteDecision.redirect(...)` |
+| `RouteDecision.error(...)` | Throw an exception; handle it through `errorBuilder` and `onError` |
+| `titleBuilder` and zero-argument `title` | `title: (state) => ...`, synchronous or asynchronous |
+| Automatic app/page title formatting | Return the complete title; `appTitle` is only a fallback |
+| Public `TitleObserver` and browser updater | Automatic internal title management |
+| `RouteLoaderWidget` | Internal guard execution; configure `loadingBuilder` |
+| Implicit loader/denial/error screens | Required `loadingBuilder`, `deniedBuilder`, `notFoundBuilder`, `errorBuilder` |
+| `onUnknownRoute` returning a native route | `notFoundBuilder` returning a widget |
+| Multiple matching/state helpers | `router.match(location, arguments: ...)` returns a record with `definition` and `state` |
+| Legacy state constructors | `RouteState(Uri, ...)` |
+
+The old names have no forwarding aliases. Import only the public libraries; source files have moved into `routing`, `guards`, `titles` and `default_pages` folders.
+
+## Explicit page choices
+
+The four builders are required even when you want the supplied views. Opt in through a separate import:
+
 ```dart
-class AuthGuard extends RouteGuard {
-  @override
-  String? redirect(RouteState state) => isLoggedIn ? null : '/login';
-}
-```
+import 'package:route_definer/default_pages.dart' as default_router;
 
-**After**
-```dart
-class AuthGuard extends RouteGuard {
-  @override
-  Future<void> check(CurrentRoute current) async {
-    if (!isLoggedIn) {
-      Navigator.pushReplacementNamed(current.context, '/login');
-    }
-  }
-}
-```
-
-## Route definitions
-
-- `requireAuthorization` and the global `isAuthorized` callback were removed.
-- Each `RouteDefiner` may now supply an asynchronous `isAuthorized` function.
-- The `evaluateRedirect` method was removed; guards are run automatically.
-- Optional `data` and lazy `title` properties were added.
-
-**Before**
-```dart
-RouteDefiner(
-  path: '/profile',
-  builder: (ctx, state) => const ProfilePage(),
-  requireAuthorization: true,
-  guards: [AuthGuard()],
+final router = RouteDefinerRouter(
+  routes: routes,
+  loadingBuilder: (_) => const default_router.LoadingPage(),
+  deniedBuilder: (_, __) => const default_router.DeniedPage(),
+  notFoundBuilder: (_, __) => const default_router.NotFoundPage(),
+  errorBuilder: (_, failure, retry) => default_router.ErrorPage(onRetry: retry),
 );
 ```
 
-**After**
+Return your own widgets wherever the app needs a different design or behavior. The ready-made widgets accept display text for localization; the error widget requires a retry action and does not show exception details. An import prefix of `DefaultRouter` also supports the spelling `DefaultRouter.ErrorPage(...)`; lowercase `default_router` follows Dart's lint convention.
+
+## One guard pipeline and one title resolver
+
 ```dart
-RouteDefiner(
-  path: '/profile',
-  builder: (ctx, state) => const ProfilePage(),
-  isAuthorized: (current) async => isLoggedIn,
-  guards: [AuthGuard()],
-  title: () async => 'Profile',
+RouteDefiner<void>(
+  path: '/account',
+  title: (state) => 'Account',
+  guards: [
+    (current) => signedIn
+        ? const RouteDecision.allow()
+        : const RouteDecision.redirect('/login'),
+  ],
+  builder: (_, __) => const AccountPage(),
 );
 ```
 
-## Global configuration
+Guards run in order. Denial, redirect and exceptions stop the chain and prevent protected page construction. Throwing an exception displays `errorBuilder`, which receives a retry callback. Removed or covered pending pages ignore late results. Connect your I/O cancellation to `current.cancellation`; connect authentication changes to `refreshListenable` or call `router.refresh()`.
 
-- `GlobalRouteDefiner.isAuthorized` and `onRedirect` were removed.
-- `unauthorizedBuilder` now receives `(BuildContext, CurrentRoute)`.
-- New optional `loaderBuilder` lets you show a widget while guards or authorization run.
+## Behavior to review
 
-**Before**
-```dart
-GlobalRouteDefiner(
-  initialRoute: '/',
-  title: 'App',
-  isAuthorized: (state) => isLoggedIn,
-  onRedirect: (state, target, task) => const CircularProgressIndicator(),
-  unauthorizedBuilder: (ctx, state) => const Text('Denied'),
-  onUnknownRoute: ...,
-);
-```
+- The first **complete** pattern match wins in declaration order. Literal punctuation has no regex meaning. Matching is case-sensitive and trailing slashes are significant. Ambiguous parameter patterns are rejected. Partial destinations use `notFoundBuilder`.
+- URI state and definition collections are immutable. Use `updateRoutes` to replace definitions. Full URIs retain repeated query values and fragments; generated path parameters are encoded safely.
+- Router arguments must round-trip through `RouteArgumentsCodec`. The default is JSON; model objects require a custom codec when their types must survive restoration.
+- Match `RouteDefiner<T>` with `push<T>` and `pop<T>`. Removal, replacement, reset and disposal complete pending library push futures with `null`.
+- `DefinedRouteFactory` is one generic callback type for global and route-specific overrides: `<T>(settings, builder, options) => CupertinoPageRoute<T>(settings: settings, builder: builder)`. Always preserve settings. The global factory also applies to not-found and error pages.
+- Use `PopScope<T>` for native back veto. Explicit stack changes and browser history changes do not invoke a pop veto. Set restoration scope IDs on both the app and router when restoration is wanted.
 
-**After**
-```dart
-GlobalRouteDefiner(
-  initialRoute: '/',
-  title: 'App',
-  loaderBuilder: (current) => const CircularProgressIndicator(),
-  unauthorizedBuilder: (ctx, current) => const Text('Denied'),
-  onUnknownRoute: ...,
-);
-```
-
-## Title updates
-
-`RouteDefiner` can now expose a lazy `title` used by the new `TitleObserver` to update the browser or app bar title:
-
-```dart
-MaterialApp(
-  navigatorObservers: [TitleObserver(appTitle: TitleObserver.defaultTitleGenerator)],
-);
-```
-
-## Summary
-
-After updating guards, route definitions, and global configuration as shown above, the application will be compatible with version 2.0.0.
+See [navigation details](doc/navigation.md), [compatibility](doc/compatibility.md) and [release checks](CONTRIBUTING.md).

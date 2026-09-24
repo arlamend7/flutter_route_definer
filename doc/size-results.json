@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-23",
+  "flutter": "3.41.6",
+  "dart": "3.11.4",
+  "web": "1.1.1",
+  "build": "web --release --no-pub --no-web-resources-cdn",
+  "measurements": [
+    {
+      "fixture": "size_baseline",
+      "js_bytes": 1752880,
+      "gzip_9_bytes": 514471
+    },
+    {
+      "fixture": "size_router",
+      "js_bytes": 1797253,
+      "gzip_9_bytes": 529105
+    }
+  ]
+}

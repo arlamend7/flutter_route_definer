@@ -1,0 +1,92 @@
+{
+  "date": "2026-09-23",
+  "flutter": "3.41.6",
+  "dart": "3.11.4",
+  "mode": "flutter test host VM/JIT",
+  "measurements": [
+    {
+      "routes": 10,
+      "case": "first",
+      "median_us": 1.85,
+      "p95_us": 3.12,
+      "initialization_us": 4133
+    },
+    {
+      "routes": 10,
+      "case": "last",
+      "median_us": 0.7,
+      "p95_us": 1.81,
+      "initialization_us": 4133
+    },
+    {
+      "routes": 10,
+      "case": "miss",
+      "median_us": 0.36,
+      "p95_us": 0.67,
+      "initialization_us": 4133
+    },
+    {
+      "routes": 10,
+      "case": "partial",
+      "median_us": 0.36,
+      "p95_us": 0.55,
+      "initialization_us": 4133
+    },
+    {
+      "routes": 100,
+      "case": "first",
+      "median_us": 0.34,
+      "p95_us": 0.59,
+      "initialization_us": 507
+    },
+    {
+      "routes": 100,
+      "case": "last",
+      "median_us": 1.19,
+      "p95_us": 1.78,
+      "initialization_us": 507
+    },
+    {
+      "routes": 100,
+      "case": "miss",
+      "median_us": 0.51,
+      "p95_us": 0.77,
+      "initialization_us": 507
+    },
+    {
+      "routes": 100,
+      "case": "partial",
+      "median_us": 0.87,
+      "p95_us": 1.28,
+      "initialization_us": 507
+    },
+    {
+      "routes": 1000,
+      "case": "first",
+      "median_us": 0.32,
+      "p95_us": 0.97,
+      "initialization_us": 3766
+    },
+    {
+      "routes": 1000,
+      "case": "last",
+      "median_us": 8.49,
+      "p95_us": 8.95,
+      "initialization_us": 3766
+    },
+    {
+      "routes": 1000,
+      "case": "miss",
+      "median_us": 3.18,
+      "p95_us": 3.43,
+      "initialization_us": 3766
+    },
+    {
+      "routes": 1000,
+      "case": "partial",
+      "median_us": 6.85,
+      "p95_us": 7.31,
+      "initialization_us": 3766
+    }
+  ]
+}

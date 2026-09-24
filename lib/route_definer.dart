@@ -1,16 +1,15 @@
-/// A flexible routing system for Flutter with support for guards, dynamic paths, and authorization.
-///
-/// This library provides [RouteDefiner], [RouteGuard], and [AppRouter] to build
-/// modular and testable navigation flows.
+/// Typed Flutter routing with one guard pipeline and one title resolver.
 library route_definer;
 
-export 'src/app_router.dart';
-export 'src/route_definer.dart';
-export 'src/route_guard.dart';
-export 'src/route_state.dart';
-export 'src/global_route_definer.dart';
-export 'src/route_options.dart';
-export 'src/current_route.dart';
-export 'widgets/route_loader_widget.dart';
-export 'src/title_observer.dart';
-export 'navigations/title_updater_stub.dart' if (dart.library.html) 'navigations/title_updater.dart';
+export 'src/guards/current_route.dart';
+export 'src/guards/route_decision.dart';
+export 'src/inspection/navigation_diagnostics.dart';
+export 'src/inspection/navigation_event.dart';
+export 'src/inspection/route_snapshot.dart';
+export 'src/routing/route_definer.dart';
+export 'src/routing/route_definer_router.dart';
+export 'src/guards/route_guard.dart';
+export 'src/routing/route_options.dart';
+export 'src/routing/route_pattern.dart';
+export 'src/routing/route_stack.dart';
+export 'src/routing/route_state.dart';
