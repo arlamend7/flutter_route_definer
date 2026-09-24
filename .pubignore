@@ -1,0 +1,14 @@
+.git/
+.github/
+.dart_tool/
+**/.dart_tool/
+build/
+**/build/
+**/*.log
+**/.DS_Store
+pubspec.lock
+example/pubspec.lock
+analysis_options.yaml
+
+# Root screenshots are not package assets.
+/*.png

@@ -1,0 +1,28 @@
+name: Navigation bug
+description: Report a reproducible routing or compatibility problem.
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Paste Flutter/Dart version, route_definer version, OS/browser/device and dependency resolution.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction and navigation sequence
+      description: Include a small route table and exact push/pop/redirect/history steps. Use synthetic data.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or failed test
+      description: Remove credentials, private URLs and user data.

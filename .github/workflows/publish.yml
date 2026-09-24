@@ -2,13 +2,17 @@ name: Publish to pub.dev
 
 on:
   push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+
+permissions:
+  contents: read
 
 jobs:
+  validate:
+    uses: ./.github/workflows/validate.yml
   publish:
+    needs: validate
     permissions:
-      id-token: write # Required for authentication using OIDC
+      contents: read
+      id-token: write
     uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
-    # with:
-    #   working-directory: path/to/package/within/repository

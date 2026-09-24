@@ -1,3 +1,27 @@
+## 3.0.0
+
+- Retry redirect-loop and redirect-limit failures with a fresh guard attempt. Refresh argument-dependent titles when restoration reuses a page, invalidating pending stale titles. Add guard retry and restored browser-title regressions.
+
+- Add declarative `router.remove(id)` for portable page removal on older Flutter SDKs. Keep native-removal integration tests on SDKs that permit that Flutter API. Diagnose Chrome startup failures, wait for complete port-file contents, and test startup timeouts/early exits.
+
+- Fix Flutter 3.27/3.32 annotation imports by declaring `meta` directly. Observe native page removals even when Flutter omits `onDidRemovePage`, preserving the stack and pending results on Flutter 3.47. Wait for Chrome shutdown and retry temporary-profile cleanup in browser checks. Require the full pana pub-point score in release validation.
+- Add resolved `currentRoute`/`stack` inspection snapshots, asynchronous navigation events, optional bounded history and configurable diagnostics with sensitive fields redacted by default. Existing APIs remain available. Report successful managed pops immediately and distinguish them from removal.
+
+- Add instance-owned `RouteDefinerRouter`, `RouterConfig`, typed pages/results, browser history, full URI state, stack serialization and Flutter restoration support.
+- Remove the static `AppRouter`, named-route adapter, `GlobalRouteDefiner` and loader wrapper. Configure one `RouteDefinerRouter` directly.
+- Unify authorization and redirects under function-based `guards`; remove `isAuthorized`, `beforeEnter` and class-based guard checks. Use one state-aware `title` callback and an optional `appTitle` fallback.
+- Require explicit loading, denied, not-found and error builders. Supply opt-in pages through the separate `default_pages.dart` library. Organize source into routing, guards, titles and default_pages folders.
+- Add canonical initial stacks and a shared generic `DefinedRouteFactory` for global and per-route native page customization.
+- Fail closed on authorization denial and guard errors. Add explicit allow/deny/redirect decisions and exception handling, terminal redirects with loop limits, retry, timeout, cooperative cancellation and access refresh.
+- Memoize asynchronous checks across rebuilds and ignore results from removed or covered routes.
+- Validate and compile route patterns once. Preserve literal punctuation, Unicode, encoded path segments, repeated query parameters and fragments. Reject ambiguous definitions and prevent near-match shadowing.
+- Make route state and definition collections immutable. Add parameter/location helpers.
+- Fix stale browser titles, replacement/removal observation and JavaScript/WebAssembly conditional imports.
+- Use current Navigator page-removal APIs and typed pop callbacks, respecting `PopScope` through `maybePop`.
+- Correct SDK constraints to Flutter >=3.27 / Dart >=3.6 and package:web >=0.4. Add a runnable example, behavioral/browser regressions, SDK/dependency CI, release gates and migration/platform/support documentation.
+
+This is a breaking release. Read MIGRATION.md and doc/compatibility.md; SDK matrix and physical-platform release checks must be green before publication.
+
 # Changelog
 
 ## [1.0.0] - Initial release

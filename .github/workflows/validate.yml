@@ -1,0 +1,108 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flutter: ['3.27.0', '3.32.8', '3.41.6', '3.47.5']
+        dependencies: [get, downgrade]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter }}
+          cache: true
+      - run: flutter pub ${{ matrix.dependencies }}
+      - run: flutter pub ${{ matrix.dependencies }}
+        working-directory: example
+      - run: flutter analyze --no-pub
+      - name: Test portable routing on older SDKs
+        if: matrix.flutter == '3.27.0' || matrix.flutter == '3.32.8'
+        run: flutter test --no-pub --exclude-tags native-page-removal
+      - name: Test routing and native page removal
+        if: matrix.flutter != '3.27.0' && matrix.flutter != '3.32.8'
+        run: flutter test --no-pub
+      - run: flutter test --no-pub
+        working-directory: example
+      - if: matrix.flutter == '3.41.6' && matrix.dependencies == 'get'
+        run: dart format --output=none --set-exit-if-changed lib test example/lib example/test tool
+
+  browser:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flutter: ['3.27.0', '3.47.5']
+        dependencies: [get, downgrade]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter }}
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test browser startup handling
+        run: node --test tool/browser_startup_test.mjs
+      - run: flutter pub ${{ matrix.dependencies }}
+      - run: flutter pub ${{ matrix.dependencies }}
+        working-directory: example
+      - name: Build runnable example
+        run: flutter build web --release --no-pub --no-web-resources-cdn
+        working-directory: example
+      - name: Build minimal quick start
+        run: flutter build web --release --no-pub --no-web-resources-cdn -t lib/minimal.dart
+        working-directory: example
+      - name: JavaScript browser regression app
+        run: flutter build web --release --no-pub --no-web-resources-cdn -t lib/browser_check.dart
+        working-directory: example
+      - run: node tool/browser_check.mjs example/build/web js
+      - name: WebAssembly browser regression app
+        run: flutter build web --release --wasm --no-pub --no-web-resources-cdn -t lib/browser_check.dart
+        working-directory: example
+      - run: node tool/browser_check.mjs example/build/web wasm
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          cache: true
+      - run: flutter pub get
+      - run: dart doc --output build/api
+      - run: dart pub publish --dry-run
+      - name: Install package scoring tool
+        run: dart pub global activate pana 0.23.19
+      - name: Require maximum pub points
+        run: |
+          score_source=$(mktemp -d)
+          git archive HEAD | tar -x -C "$score_source"
+          mkdir -p build
+          dart pub global run pana --json --exit-code-threshold 0 "$score_source" > build/pub-score.json
+      - name: Save pub points report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pub-score
+          path: build/pub-score.json
+          if-no-files-found: ignore
+      - name: Version matches release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 tool/check_release.py

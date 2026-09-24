@@ -1,50 +1,40 @@
-name: Deploy DartDoc to GitHub Pages
+name: Deploy API documentation
 
 on:
-  push:
+  workflow_run:
+    workflows: [Validate]
     branches: [master]
-  workflow_dispatch:
+    types: [completed]
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-env:
-  PUB_ENVIRONMENT: flutter_ci
 
 jobs:
   build:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.32.8'  
-
-    - name: Install dependencies
-      run: flutter pub get
-
-    - name: Generate Dart documentation
-      run: dart doc --output docs
-
-    - name: Upload documentation to GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: docs
-
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          cache: true
+      - run: flutter pub get
+      - run: dart doc --output build/api
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/api
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v4
+        id: deployment
