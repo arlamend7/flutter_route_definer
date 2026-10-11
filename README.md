@@ -12,7 +12,7 @@ The library provides:
 
 Choose it when you want a small, explicit route table without code generation. Automatic shell/tab orchestration, wildcard matching and automatic URL composition across nested navigators are outside its scope.
 
-**This checkout prepares an unpublished 3.0.0 release with breaking changes.** See [migration](MIGRATION.md) before upgrading an existing application.
+**This checkout prepares an unpublished 3.1.0 release, building on the breaking API changes in 3.0.0.** See [migration](MIGRATION.md) before upgrading an existing application.
 
 ## Contents
 
@@ -53,7 +53,7 @@ Run `flutter pub get`. Import the core API from `package:route_definer/route_def
 | `meta` annotations | `^1.15.0` | Imported directly for compatibility with older Flutter SDKs |
 | `web` runtime dependency | `>=0.4.0 <2.0.0` | Normal and minimum dependency resolutions are checked separately |
 
-The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the latest validation record](doc/improvements-validation.md) for results and limitations. Do not add a hosted `^3.0.0` dependency until that version is actually published.
+The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the latest validation record](doc/improvements-validation.md) for results and limitations. Do not add a hosted `^3.1.0` dependency until that version is actually published.
 
 ## Run the example
 

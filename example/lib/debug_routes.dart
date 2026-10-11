@@ -20,7 +20,7 @@ final router = RouteDefinerRouter(
           includeData: true,
           includeErrorDetails: true
           // Arguments, custom data and error details stay out of logs.
-        )
+          )
       : null,
   routes: [
     RouteDefiner<void>(
