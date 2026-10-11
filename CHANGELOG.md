@@ -1,3 +1,11 @@
+## 3.1.0
+
+- Preserve screen state across access refresh, hiding retained content during revalidation and discarding it on denial/failure or changed route inputs.
+- Add definition-based `pushRoute`, `goRoute` and `replaceRoute` with inferred push results and validation against stale/shadowed registrations.
+- Add opt-in `routeWarnings` for fully shadowed definitions and pattern coverage inspection.
+- Add seeded navigation-sequence regressions, complete login-return/tab/draft recipes, disposable native fixtures and iOS/Android integration CI.
+- Share browser assertions across Chrome, Firefox and WebKit; add pinned browser tooling and cross-browser CI.
+
 ## 3.0.0
 
 - Retry redirect-loop and redirect-limit failures with a fresh guard attempt. Refresh argument-dependent titles when restoration reuses a page, invalidating pending stale titles. Add guard retry and restored browser-title regressions.

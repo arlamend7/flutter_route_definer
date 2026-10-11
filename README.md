@@ -48,12 +48,12 @@ Run `flutter pub get`. Import the core API from `package:route_definer/route_def
 
 | Requirement | Declared constraint | Local verification |
 |---|---|---|
-| Flutter | `>=3.27.0` | Flutter 3.41.6 |
-| Dart | `>=3.6.0 <4.0.0` | Dart 3.11.4, bundled with that Flutter SDK |
+| Flutter | `>=3.27.0` | Flutter 3.47.5 |
+| Dart | `>=3.6.0 <4.0.0` | Dart 3.13.4, bundled with that Flutter SDK |
 | `meta` annotations | `^1.15.0` | Imported directly for compatibility with older Flutter SDKs |
 | `web` runtime dependency | `>=0.4.0 <2.0.0` | Normal and minimum dependency resolutions are checked separately |
 
-The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the validation record](doc/validation.md) for results and limitations. Do not add a hosted `^3.0.0` dependency until that version is actually published.
+The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the latest validation record](doc/improvements-validation.md) for results and limitations. Do not add a hosted `^3.0.0` dependency until that version is actually published.
 
 ## Run the example
 
@@ -160,6 +160,20 @@ final selected = await router.push<int>('/items/7');
 if (selected != null) debugPrint('Selected $selected');
 ```
 
+Prefer definition-based navigation when you already hold the registered route:
+
+```dart
+final Future<int?> result = router.pushRoute(itemRoute,
+    parameters: {'id': '7'}, queryParameters: {'tab': 'details'});
+```
+
+Here `itemRoute` is a registered `RouteDefiner<int>`; the return type is inferred
+without repeating `<int>`. `goRoute` and `replaceRoute` accept the same definition,
+path/query parameters, fragment and arguments. All three reject stale, unregistered
+or shadowed definitions before changing the stack. The generated location must
+select that exact definition under normal declaration-order matching. String
+navigation remains available for external links and dynamic destinations.
+
 `RouteDefiner<T>` sets the native route's result type. Use the same `T` for `push<T>` and `pop<T>`. Flutter's `Navigator.of(context).pop<T>(result)` also works for the managed page. Removal, replacement, redirect away from an attempted destination, stack reset and router disposal complete pending library push futures with `null`. Browser Forward restores a page, not a previously completed Future.
 
 `go('/users/42/edit')` includes `/`, `/users` and `/users/42` only when those ancestors are registered, then includes the final destination even if unmatched. `push` appends only the requested destination.
@@ -182,6 +196,12 @@ Set `canPop` from application state and use Flutter's `onPopInvokedWithResult` f
 Patterns use literal segments and whole-segment parameters such as `/users/:id`. Matching is case-sensitive, preserves trailing slashes, and treats punctuation literally. There are no regex patterns, wildcards or optional segments.
 
 The **first complete match in declaration order wins**. Put `/users/new` before `/users/:id` when the static route should take precedence. Partial matches do not hide complete matches. Identical/equivalent patterns such as `/users/:id` and `/users/:name` are rejected at registration with `ArgumentError`.
+
+Inspect `router.routeWarnings` to find definitions fully covered by an earlier
+pattern, such as `/users/:id` preceding `/users/new`. Each warning exposes `route`
+and `shadowedBy`; `toString()` explains the ordering fix. Diagnostics are computed
+lazily for each table, never change precedence and never log automatically.
+Partial overlaps are not reported; equivalent patterns still fail registration.
 
 Generate links instead of interpolating unescaped values:
 
@@ -292,6 +312,14 @@ RouteGuard permissionGuard(Future<bool> Function() checkPermission) {
 Add its returned function to a definition's `guards`. Set `resolutionTimeout: const Duration(seconds: 10)` on the router to bound the whole attempt; the default `null` has no timeout. A timeout produces a failure and ignores late results. Redirect cycles or chains beyond `redirectLimit` (default `5`) also fail.
 
 Unrelated widget rebuilds reuse the current attempt. Removing or covering a pending page cancels it; returning to that covered pending page starts a new attempt. Completed checks remain valid until `refresh()`/`refreshListenable` or relevant definition/state changes. Call `router.refresh()` after changes that require access to be reevaluated.
+
+Refresh preserves the state of unguarded screens. Previously authorized guarded
+screens stay mounted but hidden during revalidation, with focus, hit testing,
+semantics and tickers disabled. A successful check restores the existing form or
+scroll state; denial/error discards it. Changed definitions, URIs or arguments
+also discard retained content. Initially blocked pages are never built. Hidden
+state still occupies memory and application timers/subscriptions can continue;
+connect sensitive background work to your application session lifecycle.
 
 `CurrentRoute` exposes `context`, `route`, `state`, `cancellation` and `isActive` for that attempt. `isActive` checks mounted context and cancellation, not global navigator focus or visibility. Use `cancellation.whenCancelled` to connect an HTTP client's cancellation facility. Dart cannot forcibly terminate arbitrary Futures. Do not retain the widget context or navigate imperatively from guards; return a redirect decision.
 
@@ -608,6 +636,8 @@ Version 3 removes static `AppRouter`, `GlobalRouteDefiner`, named-route adapters
 
 ## Resources and source layout
 
+- [Runnable login, retained-tab and unsaved-form recipes](doc/recipes.md)
+- [Native and additional browser checks](doc/platform-validation.md)
 - [Minimal quick start](example/lib/minimal.dart), [full example application](example/lib/main.dart) and [navigation inspector](example/lib/widgets/navigation_inspector.dart)
 - [Inspection investigation, guarantees and event semantics](doc/route-inspection.md)
 - [Platform setup, restoration and custom routes](doc/navigation.md)

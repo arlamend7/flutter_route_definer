@@ -15,6 +15,8 @@ class RouteGate extends StatefulWidget {
     required this.routeState,
     required this.router,
     required this.onRedirect,
+    this.revision = 0,
+    this.retry = 0,
     this.failure,
     this.onRetryFailure,
     this.onGuardResult,
@@ -24,6 +26,8 @@ class RouteGate extends StatefulWidget {
   final RouteState routeState;
   final RouteDefinerRouter router;
   final void Function(RedirectNavigation) onRedirect;
+  final int revision;
+  final int retry;
   final RouteFailure? failure;
   final VoidCallback? onRetryFailure;
   final void Function(int, RouteDecision)? onGuardResult;
@@ -41,6 +45,13 @@ class _RouteGateState extends State<RouteGate> {
   bool _running = false;
   bool _reported = false;
   int? _guardIndex;
+  Widget? _content;
+  int _contentVersion = 0;
+
+  void _discardContent() {
+    _content = null;
+    _contentVersion++;
+  }
 
   bool get _active => mounted && (_owner?.isCurrent ?? true);
 
@@ -69,6 +80,10 @@ class _RouteGateState extends State<RouteGate> {
     if (oldWidget.definition != widget.definition ||
         oldWidget.routeState.uri != widget.routeState.uri ||
         oldWidget.routeState.arguments != widget.routeState.arguments) {
+      _discardContent();
+      _reset();
+    } else if (oldWidget.revision != widget.revision ||
+        oldWidget.retry != widget.retry) {
       _reset();
     }
   }
@@ -135,6 +150,7 @@ class _RouteGateState extends State<RouteGate> {
         return;
       }
       setState(() {
+        if (result is! AllowNavigation) _discardContent();
         _decision = result;
         _running = false;
       });
@@ -145,6 +161,7 @@ class _RouteGateState extends State<RouteGate> {
       cancellation.cancel();
       setState(() {
         _running = false;
+        _discardContent();
         _failure = RouteFailure(
             error: error, stackTrace: stackTrace, state: widget.routeState);
       });
@@ -160,6 +177,7 @@ class _RouteGateState extends State<RouteGate> {
     } catch (error, stackTrace) {
       if (!_active) return;
       setState(() {
+        _discardContent();
         _failure = RouteFailure(
             error: error, stackTrace: stackTrace, state: widget.routeState);
       });
@@ -200,16 +218,40 @@ class _RouteGateState extends State<RouteGate> {
 
   @override
   Widget build(BuildContext context) {
+    final allowed = _decision is AllowNavigation && _failure == null;
+    Widget? status;
     if (_failure case final failure?) {
-      return widget.router.errorBuilder(context, failure, _retry);
+      _discardContent();
+      status = widget.router.errorBuilder(context, failure, _retry);
+    } else if (allowed) {
+      _content = widget.definition.builder(context, widget.routeState);
+    } else {
+      final current = _current(_cancellation ?? RouteCancellation());
+      status = _decision is DenyNavigation
+          ? widget.router.deniedBuilder(context, current)
+          : widget.router.loadingBuilder(current);
     }
-    if (_decision is AllowNavigation) {
-      return widget.definition.builder(context, widget.routeState);
-    }
-    final current = _current(_cancellation ?? RouteCancellation());
-    if (_decision is DenyNavigation) {
-      return widget.router.deniedBuilder(context, current);
-    }
-    return widget.router.loadingBuilder(current);
+    // Keep previously authorized state only while rechecking. Offstage removes
+    // paint, hit testing and semantics; ExcludeFocus also covers older SDKs.
+    // Denial, failure and a changed definition/URI/arguments discard the child.
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        ExcludeFocus(
+          excluding: !allowed,
+          child: TickerMode(
+            enabled: allowed,
+            child: Offstage(
+              offstage: !allowed,
+              child: KeyedSubtree(
+                key: ValueKey(_contentVersion),
+                child: _content ?? const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ),
+        if (status != null) status,
+      ],
+    );
   }
 }

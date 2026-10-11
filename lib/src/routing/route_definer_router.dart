@@ -13,6 +13,7 @@ import 'package:route_definer/src/routing/route_definer.dart';
 import 'package:route_definer/src/guards/route_gate.dart';
 import 'package:route_definer/src/routing/route_pattern.dart';
 import 'package:route_definer/src/routing/route_registry.dart';
+import 'package:route_definer/src/inspection/route_table_warning.dart';
 import 'package:route_definer/src/routing/route_stack.dart';
 import 'package:route_definer/src/routing/route_state.dart';
 import 'package:route_definer/src/titles/title_observer.dart';
@@ -161,6 +162,10 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
 
   List<RouteDefiner<dynamic>> get routes => _registry.routes;
 
+  /// Opt-in diagnostics for definitions fully shadowed by earlier patterns.
+  /// Computed lazily per table; matching order is never changed.
+  List<RouteTableWarning> get routeWarnings => _registry.warnings;
+
   /// The top managed page of this instance, even while guarded or dialog-covered.
   /// Independent child routers and pageless routes are not included.
   RouteSnapshot get currentRoute => _snapshot(_entries.last);
@@ -299,7 +304,9 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
   Widget _gate(
           RouteDefiner<dynamic> definition, RouteState state, _Entry entry) =>
       RouteGate(
-        key: ValueKey((entry.location.id, _refresh, entry.retry)),
+        key: ValueKey(entry.location.id),
+        revision: _refresh,
+        retry: entry.retry,
         definition: definition,
         routeState: state,
         router: this,
@@ -430,6 +437,57 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
     final entry = _entry(location, arguments: arguments);
     _change(NavigationAction.push, () => _entries.add(entry));
     return entry.result.future.then((value) => value as T?);
+  }
+
+  /// Pushes a registered definition, inferring its result type.
+  /// Throws before navigation if the generated URI selects another definition.
+  Future<T?> pushRoute<T>(
+    RouteDefiner<T> route, {
+    Map<String, String> parameters = const {},
+    Map<String, dynamic>? queryParameters,
+    String? fragment,
+    Object? arguments,
+  }) =>
+      push<T>(_definitionLocation(route, parameters, queryParameters, fragment),
+          arguments: arguments);
+
+  /// Rebuilds the ancestor stack for a registered definition.
+  void goRoute<T>(
+    RouteDefiner<T> route, {
+    Map<String, String> parameters = const {},
+    Map<String, dynamic>? queryParameters,
+    String? fragment,
+    Object? arguments,
+  }) =>
+      go(_definitionLocation(route, parameters, queryParameters, fragment),
+          arguments: arguments);
+
+  /// Replaces the top page with a registered definition.
+  void replaceRoute<T>(
+    RouteDefiner<T> route, {
+    Map<String, String> parameters = const {},
+    Map<String, dynamic>? queryParameters,
+    String? fragment,
+    Object? arguments,
+  }) =>
+      replace(_definitionLocation(route, parameters, queryParameters, fragment),
+          arguments: arguments);
+
+  String _definitionLocation<T>(
+      RouteDefiner<T> route,
+      Map<String, String> parameters,
+      Map<String, dynamic>? queryParameters,
+      String? fragment) {
+    _checkAlive();
+    final uri = route.location(
+        parameters: parameters,
+        queryParameters: queryParameters,
+        fragment: fragment);
+    if (!identical(_registry.match(uri).definition, route)) {
+      throw ArgumentError.value(route.path, 'route',
+          'Definition must be registered and win matching for this location');
+    }
+    return uri.toString();
   }
 
   /// Replaces the top page and current browser-history entry.

@@ -1,3 +1,4 @@
+import 'package:route_definer/src/inspection/route_table_warning.dart';
 import 'package:route_definer/src/routing/route_definer.dart';
 import 'package:route_definer/src/routing/route_state.dart';
 
@@ -14,6 +15,13 @@ class RouteRegistry {
     }
   }
   final List<RouteDefiner<dynamic>> routes;
+
+  late final List<RouteTableWarning> warnings = List.unmodifiable([
+    for (var index = 1; index < routes.length; index++)
+      for (var earlier = 0; earlier < index; earlier++)
+        if (routes[earlier].pattern.covers(routes[index].pattern))
+          RouteTableWarning(route: routes[index], shadowedBy: routes[earlier]),
+  ]);
 
   ({RouteDefiner<dynamic>? definition, RouteState state}) match(Uri uri,
       {Object? arguments}) {
