@@ -28,6 +28,7 @@ jobs:
       - run: flutter pub ${{ matrix.dependencies }}
         working-directory: example
       - run: flutter analyze --no-pub
+      - run: python3 tool/check_typed_navigation.py
       - name: Test portable routing on older SDKs
         if: matrix.flutter == '3.27.0' || matrix.flutter == '3.32.8'
         run: flutter test --no-pub --exclude-tags native-page-removal
@@ -37,7 +38,7 @@ jobs:
       - run: flutter test --no-pub
         working-directory: example
       - if: matrix.flutter == '3.41.6' && matrix.dependencies == 'get'
-        run: dart format --output=none --set-exit-if-changed lib test example/lib example/test tool
+        run: dart format --output=none --set-exit-if-changed lib test example/lib example/test example/integration_test tool
 
   browser:
     runs-on: ubuntu-latest
@@ -106,3 +107,69 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: python3 tool/check_release.py
+
+  cross-browser:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --prefix tool/browsers
+      - run: npx --prefix tool/browsers playwright install --with-deps ${{ matrix.browser }}
+      - run: flutter pub get
+        working-directory: example
+      - run: flutter build web --release --no-web-resources-cdn -t lib/browser_check.dart
+        working-directory: example
+      - run: node tool/browsers/check.mjs example/build/web ${{ matrix.browser }} js
+
+  native-ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          cache: true
+      - run: python3 tool/prepare_native_fixture.py
+      - name: Boot available iPhone simulator
+        run: |
+          device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for group in json.load(sys.stdin)["devices"].values() for d in group if d["name"].startswith("iPhone")))')
+          xcrun simctl boot "$device"
+          xcrun simctl bootstatus "$device" -b
+          echo "NATIVE_DEVICE=$device" >> "$GITHUB_ENV"
+      - run: flutter test integration_test/navigation_test.dart -d "$NATIVE_DEVICE"
+        working-directory: build/native_fixture
+
+  native-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          cache: true
+      - run: python3 tool/prepare_native_fixture.py
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          script: cd build/native_fixture && flutter test integration_test/navigation_test.dart -d emulator-5554

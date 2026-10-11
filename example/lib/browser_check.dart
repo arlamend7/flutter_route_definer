@@ -30,6 +30,7 @@ void main() {
           return Scaffold(body: Text(state.uri.toString()));
         },
       );
+  final itemRoute = page<int>('/item/:id', 'Item');
   router = RouteDefinerRouter(
     historyLimit: 32,
     diagnostics: NavigationDiagnostics(logger: logs.add),
@@ -42,7 +43,7 @@ void main() {
     notFoundBuilder: (_, __) => const Scaffold(body: Text('Unknown')),
     routes: [
       page<void>('/', 'Home'),
-      page<int>('/item/:id', 'Item'),
+      itemRoute,
       page<void>('/other', 'Other'),
       RouteDefiner<void>(
           path: '/redirect',
@@ -61,6 +62,12 @@ void main() {
             unawaited(router.push<int>(command['uri'] as String, arguments: {
               'source': 'browser'
             }).then((value) => selected = value ?? -1));
+          case 'pushRoute':
+            unawaited(router.pushRoute(itemRoute, parameters: {
+              'id': command['uri'] as String
+            }).then((value) => selected = value ?? -1));
+          case 'refresh':
+            router.refresh();
           case 'go':
             router.go(command['uri'] as String);
           case 'replace':

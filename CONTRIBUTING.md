@@ -9,7 +9,7 @@ flutter pub get
 flutter analyze
 flutter test
 (cd example && flutter test)
-dart format --output=none --set-exit-if-changed lib test example/lib example/test tool
+dart format --output=none --set-exit-if-changed lib test example/lib example/test example/integration_test tool
 dart doc --output build/api
 dart pub publish --dry-run
 ```
@@ -30,6 +30,8 @@ Flutter 3.27/3.32 prohibit direct `Navigator.removeRoute` on declarative pages. 
 Run `node --test tool/browser_startup_test.mjs` for browser-startup regressions. The harness waits up to 30 seconds for a complete debugging endpoint, reports early exit/spawn failures with bounded Chrome stderr, and fails on startup or navigation errors. CI also avoids limited `/dev/shm` storage.
 
 Run `flutter pub downgrade` and repeat analysis/tests to check lower dependency bounds; run it separately in `example` for example builds. Restore normal resolution with `flutter pub upgrade` afterward. SDK constraints are promises: do not raise them or add dependencies without checking migration impact. CI covers the minimum, intermediate and current pinned stable SDKs. Update the pinned current version deliberately and retain the minimum check.
+
+See [native and cross-browser validation](doc/platform-validation.md) for disposable iOS/Android runners and Firefox/WebKit checks. Seeded state-machine tests run in the ordinary library suite and report the seed/step on failure.
 
 ## Pub points
 

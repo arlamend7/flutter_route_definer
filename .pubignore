@@ -12,3 +12,4 @@ analysis_options.yaml
 
 # Root screenshots are not package assets.
 /*.png
+tool/browsers/node_modules/

@@ -36,6 +36,22 @@ class RoutePattern {
       .map((part) => part.startsWith(':') ? ':' : Uri.encodeComponent(part))
       .join('/');
 
+  /// Whether every path matched by [other] is also matched by this pattern.
+  /// Used for optional declaration-order diagnostics, not matching precedence.
+  bool covers(RoutePattern other) {
+    if (_segments.length != other._segments.length) return false;
+    for (var i = 0; i < _segments.length; i++) {
+      final earlier = _segments[i];
+      final later = other._segments[i];
+      if (earlier.startsWith(':')) {
+        if (later.isEmpty) return false;
+      } else if (earlier != later) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// Matches already decoded URI segments without reparsing them.
   Map<String, String>? matchSegments(List<String> segments) {
     if (_segments.length != segments.length) return null;
