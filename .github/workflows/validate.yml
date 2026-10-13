@@ -133,6 +133,7 @@ jobs:
 
   native-ios:
     runs-on: macos-15
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -140,14 +141,29 @@ jobs:
           flutter-version: '3.47.5'
           cache: true
       - run: python3 tool/prepare_native_fixture.py
+      - name: Test native runner timeout handling
+        run: python3 -m unittest discover -s tool -p run_ios_check_test.py
       - name: Boot available iPhone simulator
+        timeout-minutes: 5
         run: |
           device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for group in json.load(sys.stdin)["devices"].values() for d in group if d["name"].startswith("iPhone")))')
           xcrun simctl boot "$device"
           xcrun simctl bootstatus "$device" -b
           echo "NATIVE_DEVICE=$device" >> "$GITHUB_ENV"
-      - run: flutter test integration_test/navigation_test.dart -d "$NATIVE_DEVICE"
-        working-directory: build/native_fixture
+      - name: Run native iOS checks with bounded recovery
+        timeout-minutes: 25
+        run: python3 tool/run_ios_check.py --device "$NATIVE_DEVICE"
+      - name: Retain native iOS diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-ios-logs
+          path: build/ios-check-logs/
+          if-no-files-found: ignore
+      - name: Shut down test simulator
+        if: always() && env.NATIVE_DEVICE != ''
+        timeout-minutes: 2
+        run: xcrun simctl shutdown "$NATIVE_DEVICE"
 
   native-android:
     runs-on: ubuntu-latest

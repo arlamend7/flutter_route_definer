@@ -39,3 +39,18 @@ node tool/browsers/check.mjs example/build/web webkit js
 ```
 
 On Linux CI use `playwright install --with-deps`. Playwright WebKit is useful engine coverage, but it is not a test of the installed Safari application. Chrome still separately verifies the Wasm backend. Pin browser tooling using the committed npm lockfile; it adds no runtime dependency to the Flutter package.
+
+## iOS CI timeout recovery
+
+The iOS job runs `python3 tool/run_ios_check.py --device DEVICE_ID`. Each Flutter
+attempt has a ten-minute wall-clock limit, including build and connection startup.
+A timeout terminates the process group, restarts only the selected simulator,
+and retries once. Nonzero test/build exits fail immediately without retry.
+Two timeouts fail the job. The job and simulator boot also have explicit limits.
+Verbose output for each attempt and recovery command is uploaded as
+`native-ios-logs`, including after a failure, to diagnose launch/VM-service stalls.
+No simulator data is erased. The workflow shuts down its selected simulator.
+
+A fix on master does not change workflows stored at an existing release tag.
+Re-running a failed tagged publication still uses that tag's workflow; publishing
+a subsequent patch tag requires the normal version and release validation steps.

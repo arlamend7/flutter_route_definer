@@ -74,3 +74,19 @@ widget tree, checking both omitted and copied settings. It retains the rejection
 assertion and verifies clean teardown; no test is skipped and no runtime
 contract or supported SDK constraint is weakened. The corrected commit needs a
 fresh matrix run before those four jobs can be considered passed.
+
+## Tagged publication stall (2026-10-13)
+
+The corrected PR run 38330005775 and master run 38330763124 passed. Tagged
+publication run 38331382257 was cancelled after six hours in native iOS: Xcode
+completed, but no test execution result followed. This log does not establish a
+routing assertion failure or the exact startup/connection cause. Other jobs
+passed. The CI runner now bounds execution, retries one timeout after simulator
+restart, and retains verbose diagnostics; it does not retry ordinary failures.
+Six runner regression tests cover output/exit codes, process termination, restart
+order, bounded retry and recovery failures. Physical-platform gaps above remain.
+
+The bounded runner also passed the native integration fixture locally on Flutter
+3.47.5 / iPhone 17 Pro simulator (iOS 26.4) on its first attempt. Workflow YAML
+parsing and whitespace checks passed. Hosted-runner recovery remains to be
+confirmed by the next master validation run.
