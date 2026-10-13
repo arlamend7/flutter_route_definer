@@ -38,6 +38,43 @@ class RouteState {
     return value;
   }
 
+  /// All decoded values in URI order. Missing keys return an empty list.
+  /// The returned list is immutable.
+  List<String> queryValues(String name) => queryParamsAll[name] ?? const [];
+
+  String? _singleQuery(String name) {
+    final values = queryValues(name);
+    if (values.isEmpty) return null;
+    if (values.length != 1) {
+      throw FormatException('Expected one query value: $name');
+    }
+    return values.single;
+  }
+
+  /// A signed decimal integer; null when missing. Empty, malformed and repeated
+  /// values throw FormatException. Hexadecimal and whitespace are not accepted.
+  int? queryInt(String name) {
+    final value = _singleQuery(name);
+    if (value == null) return null;
+    final parsed = RegExp(r'^[+-]?[0-9]+$').stringMatch(value) == value
+        ? int.tryParse(value, radix: 10)
+        : null;
+    if (parsed == null) {
+      throw FormatException('Expected an integer query: $name');
+    }
+    return parsed;
+  }
+
+  /// Exactly `true` or `false`; null when missing. All other values, including
+  /// empty and repeated values, throw FormatException.
+  bool? queryBool(String name) {
+    final value = _singleQuery(name);
+    if (value == null) return null;
+    if (value == 'true') return true;
+    if (value == 'false') return false;
+    throw FormatException('Expected a boolean query: $name');
+  }
+
   T argumentsAs<T>() {
     final value = arguments;
     if (value is! T) throw FormatException('Expected arguments of type $T');

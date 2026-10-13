@@ -1,6 +1,22 @@
-# Migrating to 3.0
+# Migration guide
 
-This is an unpublished breaking release. It removes overlapping APIs and compatibility wrappers. Flutter >=3.27 and Dart >=3.6 are declared requirements; see [executed validation](doc/validation.md) before release.
+## Adopting 3.2.0 from 3.1.0
+
+No existing API is removed. The explicit constructor and legacy `routeFactory`
+remain supported. Optionally import `package:route_definer/material.dart` and
+use `createMaterialRouter` to supply status views. Prefer `pageRouteFactory` for
+new page customizations; it requires a `PageRoute<T>` preserving the exact
+supplied settings. A definition factory overrides a router factory. Setting
+both kinds at the same level throws `ArgumentError`.
+
+`RouteDefiner.simple`, `.redirect`, nearest-router lookup, query helpers and
+callback codecs can be adopted independently. See the [complete 3.2.0 API
+guide](doc/release-3.2.0.md) and [validation record](doc/release-3.2.0-validation.md).
+The following sections describe the earlier breaking 3.0.0 migration.
+
+## Earlier breaking migration to 3.0
+
+The 3.0 API removed overlapping APIs and compatibility wrappers. Flutter >=3.27 and Dart >=3.6 are declared requirements; see [executed validation](doc/validation.md) before release.
 
 ## One setup
 
@@ -26,7 +42,7 @@ The old names have no forwarding aliases. Import only the public libraries; sour
 
 ## Explicit page choices
 
-The four builders are required even when you want the supplied views. Opt in through a separate import:
+The explicit constructor requires four builders. Since 3.2.0, `createMaterialRouter` in `material.dart` can supply them. For explicit construction with the supplied views, opt in through a separate import:
 
 ```dart
 import 'package:route_definer/default_pages.dart' as default_router;

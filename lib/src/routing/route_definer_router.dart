@@ -78,6 +78,7 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
     this.redirectLimit = 5,
     this.defaultRouteOptions = const RouteOptions(),
     this.routeFactory,
+    this.pageRouteFactory,
     required Iterable<RouteDefiner<dynamic>> routes,
     GlobalKey<NavigatorState>? navigatorKey,
     List<NavigatorObserver> observers = const [],
@@ -91,6 +92,9 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
         navigatorKey = navigatorKey ?? GlobalKey<NavigatorState>(),
         _observers = List.unmodifiable(observers),
         _refreshListenable = refreshListenable {
+    if (routeFactory != null && pageRouteFactory != null) {
+      throw ArgumentError('Specify only one default route factory.');
+    }
     if (redirectLimit < 1) {
       throw ArgumentError.value(redirectLimit, 'redirectLimit');
     }
@@ -128,6 +132,24 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
 
   /// Applies to every page, including unknown/error pages, unless overridden.
   final DefinedRouteFactory? routeFactory;
+
+  /// Page-specific alternative to the legacy [routeFactory].
+  final DefinedPageRouteFactory? pageRouteFactory;
+
+  /// The nearest router above this context; null outside a managed Navigator.
+  static RouteDefinerRouter? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_RouterScope>()?.router;
+
+  /// Looks up the nearest router, including inside independently nested stacks.
+  static RouteDefinerRouter of(BuildContext context) {
+    final router = maybeOf(context);
+    if (router == null) {
+      throw FlutterError('No RouteDefinerRouter found above this context. '
+          'Use a context inside a screen managed by RouteDefinerRouter.');
+    }
+    return router;
+  }
+
   RouteRegistry _registry;
   @override
   final GlobalKey<NavigatorState> navigatorKey;
@@ -599,6 +621,7 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
       content: (_) => _gate(definition, resolved.state, entry),
       options: defaultRouteOptions.merge(definition.options),
       defaultRouteFactory: routeFactory,
+      defaultPageRouteFactory: pageRouteFactory,
       onPopInvoked: (didPop, result) {
         if (didPop) {
           entry.complete(result);
@@ -611,17 +634,19 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
   @override
   Widget build(BuildContext context) {
     _context = context;
-    return Navigator(
-      key: navigatorKey,
-      restorationScopeId: restorationScopeId,
-      pages: [for (final entry in _entries) _page(entry)],
-      onDidRemovePage: _didRemovePage,
-      observers: [
-        _removalObserver,
-        _titleObserver ??= TitleObserver(router: this),
-        ..._observers,
-      ],
-    );
+    return _RouterScope(
+        router: this,
+        child: Navigator(
+          key: navigatorKey,
+          restorationScopeId: restorationScopeId,
+          pages: [for (final entry in _entries) _page(entry)],
+          onDidRemovePage: _didRemovePage,
+          observers: [
+            _removalObserver,
+            _titleObserver ??= TitleObserver(router: this),
+            ..._observers,
+          ],
+        ));
   }
 
   @override
@@ -639,4 +664,11 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
     }
     super.dispose();
   }
+}
+
+class _RouterScope extends InheritedWidget {
+  const _RouterScope({required this.router, required super.child});
+  final RouteDefinerRouter router;
+  @override
+  bool updateShouldNotify(_RouterScope oldWidget) => router != oldWidget.router;
 }

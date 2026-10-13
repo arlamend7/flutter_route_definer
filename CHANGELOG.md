@@ -1,3 +1,14 @@
+## 3.2.0
+
+- Add opt-in `material.dart` and `createMaterialRouter`, supplying status pages with full constructor overrides.
+- Add `RouteFactories.material`, `cupertino`, `noTransition`, and configurable `transitions` presets with typed results and forwarded page options.
+- Add `DefinedPageRouteFactory` and `pageRouteFactory` on definitions and routers, validating settings identity while retaining the legacy factory API.
+- Add `RouteDefiner.simple` and `.redirect`, with redirects using existing guards, cancellation, retry, timeout, and loop detection.
+- Add nearest-router `RouteDefinerRouter.of` and `maybeOf` lookup for nested navigation.
+- Add strict nullable `queryInt` / `queryBool`, immutable `queryValues`, and `RouteArgumentsCodec.callbacks`.
+- Extend regression coverage and migrate minimal, browser, and native fixtures to exercise the convenience APIs. Track remaining device/browser/SDK release checks in `doc/release-3.2.0.md`.
+- Retain 3.1.0 state-preserving guard refresh, definition-based typed navigation, seeded operation tests, shadowing diagnostics, and app recipes.
+
 ## 3.1.0
 
 - Preserve screen state across access refresh, hiding retained content during revalidation and discarding it on denial/failure or changed route inputs.

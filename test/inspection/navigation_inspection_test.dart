@@ -72,7 +72,9 @@ class ObserverOnlyRemovalRouter extends RouteDefinerRouter {
 
   @override
   Widget build(BuildContext context) {
-    final navigator = super.build(context) as Navigator;
+    // Deliberately replace the scoped Navigator to suppress its page callback.
+    final navigator =
+        (super.build(context) as InheritedWidget).child as Navigator;
     return Navigator(
       key: navigator.key,
       pages: navigator.pages,

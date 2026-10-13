@@ -3,12 +3,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart' show internal;
 import 'package:route_definer/src/guards/route_guard.dart';
+import 'package:route_definer/src/guards/route_decision.dart';
 import 'package:route_definer/src/routing/route_options.dart';
 import 'package:route_definer/src/routing/route_pattern.dart';
 import 'package:route_definer/src/routing/route_state.dart';
 
 /// Creates the native route for a typed page. Preserve the supplied settings.
 typedef DefinedRouteFactory = Route<T> Function<T>(
+    RouteSettings settings, WidgetBuilder builder, RouteOptions options);
+
+/// Creates a page route, preserving the exact supplied settings object.
+/// Prefer this contract for new integrations; legacy factories remain supported.
+typedef DefinedPageRouteFactory = PageRoute<T> Function<T>(
     RouteSettings settings, WidgetBuilder builder, RouteOptions options);
 
 /// Immutable route definition. T is the value returned when its route is popped.
@@ -21,9 +27,52 @@ class RouteDefiner<T> {
     this.title,
     this.options,
     this.routeFactory,
+    this.pageRouteFactory,
   })  : guards = List.unmodifiable(guards),
         data = data == null ? null : Map.unmodifiable(data),
-        pattern = RoutePattern(path);
+        pattern = RoutePattern(path) {
+    if (routeFactory != null && pageRouteFactory != null) {
+      throw ArgumentError('Specify only one route factory per definition.');
+    }
+  }
+
+  /// Defines a screen that does not need URI state in its builder.
+  RouteDefiner.simple({
+    required String path,
+    required WidgetBuilder builder,
+    List<RouteGuard> guards = const [],
+    Map<String, Object>? data,
+    FutureOr<String> Function(RouteState)? title,
+    RouteOptions? options,
+    DefinedRouteFactory? routeFactory,
+    DefinedPageRouteFactory? pageRouteFactory,
+  }) : this(
+            path: path,
+            builder: (context, _) => builder(context),
+            guards: guards,
+            data: data,
+            title: title,
+            options: options,
+            routeFactory: routeFactory,
+            pageRouteFactory: pageRouteFactory);
+
+  /// Runs preceding guards, then redirects through the normal guard pipeline.
+  /// Redirect destinations are locations, with the usual cancellation, timeout,
+  /// retry and loop limits. Arguments are not forwarded to the destination.
+  RouteDefiner.redirect({
+    required String path,
+    required FutureOr<String> Function(RouteState) redirect,
+    List<RouteGuard> guards = const [],
+    Map<String, Object>? data,
+  }) : this(
+            path: path,
+            builder: (_, __) => const SizedBox.shrink(),
+            data: data,
+            guards: [
+              ...guards,
+              (route) async =>
+                  RouteDecision.redirect(await redirect(route.state))
+            ]);
 
   final String path;
   final Widget Function(BuildContext, RouteState) builder;
@@ -40,6 +89,9 @@ class RouteDefiner<T> {
 
   /// Overrides the router factory for this page.
   final DefinedRouteFactory? routeFactory;
+
+  /// Page-specific alternative to [routeFactory]. Preserves page identity.
+  final DefinedPageRouteFactory? pageRouteFactory;
 
   /// Validated pattern compiled once per definition.
   final RoutePattern pattern;
@@ -66,12 +118,14 @@ class RouteDefiner<T> {
     required void Function(bool, T?) onPopInvoked,
     String? restorationId,
     DefinedRouteFactory? defaultRouteFactory,
+    DefinedPageRouteFactory? defaultPageRouteFactory,
   }) =>
       _DefinedPage<T>(
         definition: this,
         content: content,
         options: options,
         defaultRouteFactory: defaultRouteFactory,
+        defaultPageRouteFactory: defaultPageRouteFactory,
         key: key,
         name: settings.name,
         arguments: settings.arguments,
@@ -86,6 +140,7 @@ class _DefinedPage<T> extends Page<T> {
     required this.content,
     required this.options,
     required this.defaultRouteFactory,
+    required this.defaultPageRouteFactory,
     required super.key,
     required super.name,
     required super.arguments,
@@ -96,6 +151,7 @@ class _DefinedPage<T> extends Page<T> {
   final WidgetBuilder content;
   final RouteOptions options;
   final DefinedRouteFactory? defaultRouteFactory;
+  final DefinedPageRouteFactory? defaultPageRouteFactory;
 
   @override
   Route<T> createRoute(BuildContext context) {
@@ -105,6 +161,16 @@ class _DefinedPage<T> extends Page<T> {
       return page.content(context);
     }
 
+    final pageFactory = definition.pageRouteFactory ??
+        (definition.routeFactory == null ? defaultPageRouteFactory : null);
+    if (pageFactory != null) {
+      final route = pageFactory.call<T>(this, buildContent, options);
+      if (!identical(route.settings, this)) {
+        throw FlutterError('A pageRouteFactory must preserve the supplied '
+            'RouteSettings object (pass settings: settings).');
+      }
+      return route;
+    }
     final factory = definition.routeFactory ?? defaultRouteFactory;
     return factory?.call<T>(this, buildContent, options) ??
         MaterialPageRoute<T>(

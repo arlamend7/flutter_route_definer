@@ -1,5 +1,7 @@
 # 3.0.0 implementation validation
 
+For the current candidate, see [3.2.0 validation](release-3.2.0-validation.md).
+
 For the subsequent state-preservation, typed-navigation, recipes and platform-test changes, see [the 2026-09-27/28 validation record](improvements-validation.md). The results below describe the earlier checkpoint.
 
 Date: 2026-09-23. Local SDK: Flutter **3.41.6**, Dart **3.11.4**. Host: macOS arm64, Apple M5, 16 GB RAM. The changes are prepared for review; this task does not publish a release.

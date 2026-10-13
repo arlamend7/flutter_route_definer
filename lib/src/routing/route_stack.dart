@@ -10,8 +10,30 @@ import 'package:route_definer/src/routing/route_pattern.dart';
 /// and retrieve protected data after authorization instead.
 abstract class RouteArgumentsCodec {
   const RouteArgumentsCodec();
+
+  /// Adapts callbacks to a codec. Encode must return JSON-compatible values;
+  /// callback errors propagate to the existing history/restoration handling.
+  const factory RouteArgumentsCodec.callbacks({
+    required Object? Function(Object?) encode,
+    required Object? Function(Object?) decode,
+  }) = _CallbackArgumentsCodec;
   Object? encode(Object? arguments);
   Object? decode(Object? encoded);
+}
+
+class _CallbackArgumentsCodec extends RouteArgumentsCodec {
+  const _CallbackArgumentsCodec(
+      {required Object? Function(Object?) encode,
+      required Object? Function(Object?) decode})
+      : _encode = encode,
+        _decode = decode;
+  final Object? Function(Object?) _encode;
+  final Object? Function(Object?) _decode;
+  @override
+  Object? encode(Object? arguments) =>
+      const JsonRouteArgumentsCodec().encode(_encode(arguments));
+  @override
+  Object? decode(Object? encoded) => _decode(encoded);
 }
 
 /// The default supports JSON values and rejects unsupported payloads eagerly.
