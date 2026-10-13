@@ -319,15 +319,37 @@ void main() {
 
   testWidgets('invalid page factory reports settings contract before install',
       (tester) async {
-    final router = rd.createMaterialRouter(
-        routes: [home()],
-        pageRouteFactory: <T>(settings, builder, options) =>
-            MaterialPageRoute<T>(builder: builder));
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router.config));
-    expect(
-        tester.takeException(),
-        isA<FlutterError>().having(
-            (error) => error.toString(), 'message', contains('must preserve')));
-    await close(tester, router);
+    // Exercise createRoute directly: deliberately failing Navigator's build
+    // leaves focus dependents behind during teardown on older Flutter SDKs.
+    await tester.pumpWidget(Builder(builder: (context) {
+      for (final copySettings in [false, true]) {
+        final definition = rd.RouteDefiner<void>.simple(
+          path: '/',
+          builder: (_) => const SizedBox(),
+          pageRouteFactory: <T>(settings, builder, options) =>
+              MaterialPageRoute<T>(
+            builder: builder,
+            settings: copySettings
+                ? RouteSettings(
+                    name: settings.name, arguments: settings.arguments)
+                : null,
+          ),
+        );
+        final page = definition.createPage(
+          key: const ValueKey('invalid-factory'),
+          settings: const RouteSettings(name: '/'),
+          content: (_) => const SizedBox(),
+          options: const rd.RouteOptions(),
+          onPopInvoked: (_, __) {},
+        );
+        expect(
+            () => page.createRoute(context),
+            throwsA(isA<FlutterError>().having((error) => error.toString(),
+                'message', contains('must preserve'))));
+      }
+      return const SizedBox();
+    }));
+    await tester.pumpWidget(const SizedBox());
+    expect(tester.takeException(), isNull);
   });
 }

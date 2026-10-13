@@ -54,3 +54,23 @@ public-library/version references in README, migration and compatibility docs.
 Relative documentation links, README/minimal-example equality, version/changelog
 consistency and `git diff --check` were checked locally. New API, release-doc and
 test files are untracked and must be included when staging the commit.
+
+## First remote CI run and compatibility correction
+
+[Run 38326133792](https://github.com/arlamend7/flutter_route_definer/actions/runs/38326133792)
+tested commit `8f2e8ce`. Thirteen jobs passed: Android/iOS integration, Firefox,
+WebKit, four Chrome JS/Wasm matrix jobs, four test jobs on Flutter 3.41.6/3.47.5,
+and packaging (documentation, publication dry run and maximum pub score).
+Formatting also passed in the 3.41.6/get job. These results supersede the earlier
+local-only gaps for those checks; physical devices, installed Safari, actual OS
+links and process-death restoration remain unverified.
+
+All four test jobs on Flutter 3.27.0/3.32.8 failed in the same negative factory
+test. Analysis and compile-time typing passed. The intended factory-contract
+exception was captured, but unmounting the deliberately failed Navigator caused
+an older-framework `_FocusInheritedScope` / `_dependents.isEmpty` assertion.
+The test now invokes the typed page's `createRoute` directly within a healthy
+widget tree, checking both omitted and copied settings. It retains the rejection
+assertion and verifies clean teardown; no test is skipped and no runtime
+contract or supported SDK constraint is weakened. The corrected commit needs a
+fresh matrix run before those four jobs can be considered passed.
