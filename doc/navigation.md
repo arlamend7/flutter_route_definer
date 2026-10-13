@@ -20,7 +20,9 @@ Router arguments must round-trip through `RouteArgumentsCodec`. The default code
 
 ## Route factories, themes and transitions
 
-`DefinedRouteFactory` is a generic function returning `Route<T>`. Set `router.routeFactory` to customize all pages, including unknown and error pages, or override it with `RouteDefiner.routeFactory`. Preserve the supplied `settings`, which is a `Page<T>`. Dropping it breaks page identity and Navigator's page lifecycle. Return a `PageRoute` when browser-title observation is needed.
+For new integrations use `DefinedPageRouteFactory` and `pageRouteFactory`, returning `PageRoute<T>` and preserving the exact settings object. Built-in `RouteFactories.material`, `cupertino`, `noTransition` and `transitions(...)` forward all supported options. Definition factories override router factories regardless of kind; specifying both kinds at one level is rejected. See the [3.2.0 factory contract](release-3.2.0.md#page-factories).
+
+The legacy `DefinedRouteFactory` remains a generic function returning `Route<T>`. Set `router.routeFactory` to customize all pages, including unknown and error pages, or override it with `RouteDefiner.routeFactory`. Preserve the supplied `settings`, which is a `Page<T>`. Dropping it breaks page identity and Navigator's page lifecycle. Return a `PageRoute` when browser-title observation is needed.
 
 ```dart
 RouteDefiner<int>(
@@ -39,7 +41,11 @@ The default factory uses the SDK's `MaterialPageRoute<T>` and passes through `Ro
 
 Flutter 3.47 introduces opt-in `material_ui` and `cupertino_ui` packages. For apps using those libraries, provide a route factory from the same design package as the app and choose the required loading/denied/not-found/error builders. Public extension points use `Widget`, `Route` and `RouteSettings`, avoiding a public `MaterialPageRoute` requirement. SDK Material remains the default to retain older Flutter compatibility. The standalone-package combination is provisional until its own integration test runs. See [Flutter's migration guidance](https://docs.flutter.dev/release/breaking-changes/material-ui-and-cupertino-ui).
 
+For a codec without a subclass, use `RouteArgumentsCodec.callbacks(encode: ..., decode: ...)`; encode output is JSON-validated. See the [callback codec recipe](release-3.2.0.md#callback-codecs).
+
 ## Nested stacks
+
+`RouteDefinerRouter.of(context)` finds the nearest router from a managed screen, including in nested stacks; `maybeOf(context)` returns null when absent. This lookup does not subscribe to route events.
 
 Each `RouteDefinerRouter` owns one Navigator. Create a separate instance for each independent nested stack. Mount `Router<RouteStack>.withConfig(config: child.nestedConfig)` under a parent Router; `nestedConfig` intentionally has no platform URL provider/parser. Create a `ChildBackButtonDispatcher` from the parent's dispatcher, pass it as `backButtonDispatcher`, and call `takePriority()` when that child is active. Keep inactive tab widgets in an `IndexedStack` to retain their state, and dispose routers when their owner is disposed.
 
@@ -49,7 +55,7 @@ This is independent nested navigation, not automatic URL composition, branch res
 
 The router manages one internal title observer. `RouteDefiner.title(state)` resolves the complete browser title for the active page; it may be asynchronous. `router.appTitle` is only the fallback for missing, empty or failed titles. Dialogs retain the underlying page title. Removed/replaced pages and outdated asynchronous title successes/errors cannot overwrite the current title. Native targets use a no-op browser title updater; set AppBar/native window titles in your app.
 
-All four page builders are required. The optional widgets in `package:route_definer/default_pages.dart` use live-region semantics; `ErrorPage` Retry has pointer, keyboard and semantic actions. Choose or replace these widgets for localization, visual design and your application's accessibility requirements. Screen focus comes from Flutter and `RouteOptions.requestFocus`; do not override it just to change a browser title.
+The explicit constructor requires all four page builders; the opt-in `createMaterialRouter` helper supplies defaults with optional overrides. The optional widgets in `package:route_definer/default_pages.dart` use live-region semantics; `ErrorPage` Retry has pointer, keyboard and semantic actions. Choose or replace these widgets for localization, visual design and your application's accessibility requirements. Screen focus comes from Flutter and `RouteOptions.requestFocus`; do not override it just to change a browser title.
 
 A guard timeout or exception leaves loading, prevents page construction and invokes `onError` once for that attempt. Retry starts a fresh attempt. The library does not log arguments or exceptions by default. A malformed incoming location produces a controlled error page; invalid programmatic `push/go/replace` arguments fail before changing the stack. Errors thrown by your screen builder remain ordinary Flutter build errors.
 

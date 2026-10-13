@@ -1,4 +1,4 @@
-/// Configuration options for customizing MaterialPageRoute behavior.
+/// Configuration options for customizing native page behavior.
 ///
 /// These options control how the route behaves in the navigation stack,
 /// such as whether it maintains state, appears as a fullscreen dialog,

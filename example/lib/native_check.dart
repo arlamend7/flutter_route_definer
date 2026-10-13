@@ -22,8 +22,7 @@ class NativeCheckAppState extends State<NativeCheckApp> {
     super.initState();
     item = RouteDefiner<int>(
       path: '/item/:id',
-      routeFactory: <T>(settings, builder, options) =>
-          CupertinoPageRoute<T>(settings: settings, builder: builder),
+      pageRouteFactory: RouteFactories.cupertino,
       builder: (_, state) => CupertinoPageScaffold(
         navigationBar: const CupertinoNavigationBar(middle: Text('Item')),
         child: Center(

@@ -1,5 +1,7 @@
 # Native and additional browser validation
 
+See [3.2.0 results and outstanding release gates](release-3.2.0-validation.md).
+
 ## Native fixture
 
 `python3 tool/prepare_native_fixture.py` creates disposable Android/iOS runners in `build/native_fixture`. Pass `--flutter /absolute/path/to/flutter` if necessary. It configures a test-only `routedefiner://example` URL scheme. Native boilerplate is regenerated with the selected SDK; the source and integration tests remain in `example/lib/native_check.dart` and `example/integration_test/navigation_test.dart`.

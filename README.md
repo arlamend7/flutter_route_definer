@@ -6,13 +6,15 @@ The library provides:
 
 - An instance-owned `RouterConfig` for URL-addressable pages, browser history and navigation-stack restoration.
 - One ordered guard pipeline for authorization, redirects and asynchronous validation.
-- Required loading, denied, not-found and error builders, with optional ready-made widgets.
+- Explicit loading, denied, not-found and error builders, plus an opt-in setup helper with ready-made views.
 - Current-route and stack inspection, optional bounded event history, and configurable diagnostics.
 - Native Flutter page routes, typed pop results, custom factories and independent nested stacks.
 
 Choose it when you want a small, explicit route table without code generation. Automatic shell/tab orchestration, wildcard matching and automatic URL composition across nested navigators are outside its scope.
 
-**This checkout prepares an unpublished 3.1.0 release, building on the breaking API changes in 3.0.0.** See [migration](MIGRATION.md) before upgrading an existing application.
+**This checkout prepares an unpublished 3.2.0 release, building on the breaking API changes in 3.0.0.** See [migration](MIGRATION.md) before upgrading an existing application.
+
+See the [3.2.0 release plan and API guide](doc/release-3.2.0.md) for route presets, redirect definitions, context lookup, query helpers, and validation gates.
 
 ## Contents
 
@@ -53,7 +55,7 @@ Run `flutter pub get`. Import the core API from `package:route_definer/route_def
 | `meta` annotations | `^1.15.0` | Imported directly for compatibility with older Flutter SDKs |
 | `web` runtime dependency | `>=0.4.0 <2.0.0` | Normal and minimum dependency resolutions are checked separately |
 
-The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the latest validation record](doc/improvements-validation.md) for results and limitations. Do not add a hosted `^3.1.0` dependency until that version is actually published.
+The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the latest validation record](doc/release-3.2.0-validation.md) for results and limitations. Do not add a hosted `^3.2.0` dependency until that version is actually published.
 
 ## Run the example
 
@@ -73,31 +75,27 @@ Paste this into `lib/main.dart` after adding the dependency. It has just two pag
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:route_definer/default_pages.dart' as default_router;
-import 'package:route_definer/route_definer.dart';
+import 'package:route_definer/material.dart';
 
 void main() => runApp(MaterialApp.router(routerConfig: router.config));
 
-final RouteDefinerRouter router = RouteDefinerRouter(
-  loadingBuilder: (_) => const default_router.LoadingPage(),
-  deniedBuilder: (_, __) => const default_router.DeniedPage(),
-  notFoundBuilder: (_, __) => const default_router.NotFoundPage(),
-  errorBuilder: (_, __, retry) => default_router.ErrorPage(onRetry: retry),
+final router = createMaterialRouter(
   routes: [
-    RouteDefiner<void>(
+    RouteDefiner<void>.simple(
       path: '/',
-      builder: (_, __) => Scaffold(
+      builder: (context) => Scaffold(
         body: Center(
           child: FilledButton(
-            onPressed: () => router.push<void>('/about'),
+            onPressed: () =>
+                RouteDefinerRouter.of(context).push<void>('/about'),
             child: const Text('Open About'),
           ),
         ),
       ),
     ),
-    RouteDefiner<void>(
+    RouteDefiner<void>.simple(
       path: '/about',
-      builder: (_, __) => Scaffold(
+      builder: (context) => Scaffold(
         appBar: AppBar(title: const Text('About')),
         body: const Center(child: Text('Hello!')),
       ),
@@ -106,7 +104,7 @@ final RouteDefinerRouter router = RouteDefinerRouter(
 );
 ```
 
-The four page builders are required by the library; this example uses the supplied widgets. The router lives for the lifetime of this tiny app. If a widget owns your router instead, create it once in `initState` and call `router.dispose()` in `dispose`. Keep it outside `build`, and use a separate router for each navigation tree.
+The optional `material.dart` import supplies default status pages through `createMaterialRouter`. Override any builder as needed, or use the explicit `RouteDefinerRouter` constructor for your own design system. The router lives for the lifetime of this tiny app. If a widget owns your router instead, create it once in `initState` and call `router.dispose()` in `dispose`. Keep it outside `build`, and use a separate router for each navigation tree.
 
 Run this exact [minimal example](example/lib/minimal.dart) from the repository:
 
@@ -116,7 +114,9 @@ flutter pub get
 flutter run -d chrome -t lib/minimal.dart
 ```
 
-Subsequent snippets use these imports and `router`. Add route definitions to its `routes` list and configuration arguments to its constructor where indicated.
+Subsequent snippets use `router`; snippets using `default_router` also need `import 'package:route_definer/default_pages.dart' as default_router;`. Add route definitions to its `routes` list and configuration arguments to its constructor where indicated.
+
+`RouteDefinerRouter.of(context)` finds the nearest router from a managed screen; `maybeOf(context)` returns null outside its scope. Independent nested routers shadow their parent. Keep explicit references for services and cross-stack navigation.
 
 ## Navigate and return results
 
@@ -227,6 +227,8 @@ Builders, titles and guards receive `RouteState`:
 | `uri` | Full URI, including query and fragment; external URI authority is retained. |
 | `path`, `fragment` | Dart's encoded URI getters; use `Uri.decodeComponent` for display if appropriate. |
 | `uriParams` | Decoded path parameters; `null` for unmatched locations. |
+| `queryInt(name)`, `queryBool(name)` | Null when missing; malformed or repeated scalar values throw `FormatException`. Integers are signed decimal; booleans are exactly `true`/`false`. |
+| `queryValues(name)` | Immutable values in URI order; an empty list when missing. |
 | `queryParams`, `queryParamsAll` | Read-only single-value and repeated-value query views. Use `queryParamsAll` when repetition matters. |
 | `arguments` | Application payload; ordinary builder/guard state does not deep-copy it. |
 | `requirePathParameter(name)` | Required string parameter, otherwise `FormatException`. |
@@ -325,7 +327,7 @@ connect sensitive background work to your application session lifecycle.
 
 ## Choose loading and failure pages
 
-All four builders are required, even if your app expects a particular condition to be rare:
+The explicit `RouteDefinerRouter` constructor requires all four builders. With `createMaterialRouter` from the optional `material.dart` import, these builders are optional overrides:
 
 | Builder | When it runs | Inputs |
 |---|---|---|
@@ -477,7 +479,7 @@ A custom logger receives the formatted string, and logger exceptions do not chan
 
 ## Configure the router and native pages
 
-Constructor settings, in addition to the required `routes` and four page builders:
+Constructor settings, in addition to `routes` and the four page builders (optional overrides when using `createMaterialRouter`):
 
 | Setting | Default | Purpose |
 |---|---|---|
@@ -489,13 +491,14 @@ Constructor settings, in addition to the required `routes` and four page builder
 | `refreshListenable` | `null` | Recheck access when authentication or similar state changes. |
 | `historyLimit`, `diagnostics` | `0`, `null` | Independent opt-ins for retention and logging. |
 | `defaultRouteOptions` | Empty `RouteOptions()` | Inherited native page settings. |
-| `routeFactory` | SDK `MaterialPageRoute<T>` | Global native route factory, including unknown/error pages. |
+| `routeFactory` | SDK `MaterialPageRoute<T>` | Legacy global native route factory, including unknown/error pages. |
+| `pageRouteFactory` | null | Safer `PageRoute<T>` factory with settings validation; mutually exclusive with `routeFactory`. Presets: `RouteFactories.material`, `cupertino`, `noTransition`, `transitions`. |
 | `navigatorKey`, `observers` | New key, empty list | Access the native Navigator or add your own observers. |
 | `restorationScopeId` | `null` | Navigator restoration scope; configure the app scope too. |
 | `argumentsCodec` | `JsonRouteArgumentsCodec()` | Encode/decode restorable argument values. |
 | `backButtonDispatcher` | Root dispatcher in `config` | Supply a child dispatcher for a nested router. |
 
-A definition requires `path` and `builder`; `guards` defaults to an empty immutable list. `title`, `data`, `options` and `routeFactory` are optional. Definitions and their list/map containers are immutable; replace a table through `router.updateRoutes(newDefinitions)`. This validates the new table, refreshes access/content and updates titles. Existing native route transitions/options are fixed when that route is created; replace its page to change them.
+The unnamed definition constructor requires `path` and `builder`; `guards` defaults to an empty immutable list. `title`, `data`, `options`, `routeFactory` and `pageRouteFactory` are optional; choose at most one factory per definition. Use `.simple` for a context-only builder or `.redirect` for a destination callback without a screen. Definitions and their list/map containers are immutable; replace a table through `router.updateRoutes(newDefinitions)`. This validates the new table, refreshes access/content and updates titles. Existing native route transitions/options are fixed when that route is created; replace its page to change them.
 
 `defaultRouteOptions` is merged with per-definition `options`; each non-null route value overrides its global counterpart. `RouteOptions.merge` exposes the same behavior. If neither supplies a value, the Material factory uses:
 
@@ -579,6 +582,8 @@ Set `argumentsCodec: const ItemArgumentsCodec()` and pass `arguments: const Item
 
 Advanced integrations can inspect `RouteStack`/`RouteLocation` and use `RouteDefinerParser(argumentsCodec: ...)` to parse or restore `RouteInformation`. `router.config` wires this up automatically. Invalid external history falls back to its visible URI. These restoration objects are not a persistent navigation-event ledger.
 
+For payload codecs, `RouteArgumentsCodec.callbacks(encode: ..., decode: ...)` avoids a subclass. Encoding validates JSON compatibility; decoding errors use the existing visible-URI fallback. See the [codec example](doc/release-3.2.0.md#callback-codecs).
+
 ## Use independent nested navigators
 
 Create a distinct router for each child stack and mount `Router<RouteStack>.withConfig(config: child.nestedConfig)` inside a parent page. `nestedConfig` does not report a separate platform URL. Build the child before mounting the parent page, keep both instances outside `build`, and dispose both with their owner.
@@ -616,7 +621,7 @@ In a parent definition's builder, return `Router<RouteStack>.withConfig(config: 
 | Symptom or requirement | What to check |
 |---|---|
 | “Why is my path unknown?” | Case, trailing slash, complete segment count and registration order. Partial final destinations use `notFoundBuilder`. |
-| “Missing required builder arguments” | Supply all four page builders; optional widgets are never installed implicitly. |
+| “Missing required builder arguments” | Supply all four builders to the explicit constructor, or opt into `createMaterialRouter` through `material.dart`. |
 | “Guards run again unexpectedly” | Keep the router outside `build`; inspect refresh notifications and definition/argument changes. |
 | “A page stays loading” | Ensure the guard's Future completes or set `resolutionTimeout`. Cancellation cannot stop I/O without client cooperation. |
 | “Sign-out leaves protected content” | Connect session changes to `refreshListenable` or call `refresh()`. |
@@ -641,9 +646,9 @@ Version 3 removes static `AppRouter`, `GlobalRouteDefiner`, named-route adapters
 - [Minimal quick start](example/lib/minimal.dart), [full example application](example/lib/main.dart) and [navigation inspector](example/lib/widgets/navigation_inspector.dart)
 - [Inspection investigation, guarantees and event semantics](doc/route-inspection.md)
 - [Platform setup, restoration and custom routes](doc/navigation.md)
-- [Compatibility](doc/compatibility.md), [executed validation](doc/validation.md) and [pub points / CI findings](doc/pub-score.md)
+- [Compatibility](doc/compatibility.md), [current validation](doc/release-3.2.0-validation.md) and [pub points / CI findings](doc/pub-score.md)
 - [Migration](MIGRATION.md), [changelog](CHANGELOG.md), [contribution/release checks](CONTRIBUTING.md) and [security reporting](SECURITY.md)
 - [Performance measurements and their scope](doc/performance.md)
 - [Published API reference](https://arlamend7.github.io/flutter_route_definer/route_definer/) — may describe the preceding release. Run `dart doc --output build/api` for the API in this checkout.
 
-The public libraries are `lib/route_definer.dart` and the optional `lib/default_pages.dart`. Implementation folders group `routing`, `guards`, `inspection`, `titles` and `default_pages`; tests follow the same responsibilities. Inspection/history/diagnostics need no separate logging or tracking package. The direct `meta` dependency supplies annotations without relying on Flutter to re-export them.
+The public libraries are `lib/route_definer.dart`, optional `lib/default_pages.dart`, and optional `lib/material.dart` (default-page setup plus core exports). Implementation folders group `routing`, `guards`, `inspection`, `titles` and `default_pages`; tests follow the same responsibilities. Inspection/history/diagnostics need no separate logging or tracking package. The direct `meta` dependency supplies annotations without relying on Flutter to re-export them.

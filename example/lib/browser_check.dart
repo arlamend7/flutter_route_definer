@@ -5,8 +5,7 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
 import 'package:flutter/material.dart';
-import 'package:route_definer/route_definer.dart';
-import 'package:route_definer/default_pages.dart' as default_router;
+import 'package:route_definer/material.dart';
 import 'package:web/web.dart' as web;
 
 void main() {
@@ -31,13 +30,10 @@ void main() {
         },
       );
   final itemRoute = page<int>('/item/:id', 'Item');
-  router = RouteDefinerRouter(
+  router = createMaterialRouter(
+    pageRouteFactory: RouteFactories.noTransition,
     historyLimit: 32,
     diagnostics: NavigationDiagnostics(logger: logs.add),
-    loadingBuilder: (_) => const default_router.LoadingPage(),
-    deniedBuilder: (_, __) => const default_router.DeniedPage(),
-    errorBuilder: (_, failure, retry) =>
-        default_router.ErrorPage(onRetry: retry),
     appTitle: 'Browser test',
     onError: (failure) => errors.add(failure.error.toString()),
     notFoundBuilder: (_, __) => const Scaffold(body: Text('Unknown')),

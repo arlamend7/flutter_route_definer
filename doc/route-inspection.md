@@ -19,6 +19,9 @@ final state = current.state;
 state.uri;             // Full URI, including query and fragment.
 state.path;            // Concrete path (Dart Uri's encoded representation).
 state.uriParams;       // Decoded path parameters; null if unmatched.
+state.queryInt('page'); // Nullable decimal integer; invalid/repeated values throw.
+state.queryBool('preview'); // Nullable strict true/false.
+state.queryValues('tag'); // Immutable list, empty when missing.
 state.queryParams;     // Single-value view.
 state.queryParamsAll;  // Every value for repeated keys.
 state.fragment;

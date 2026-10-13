@@ -14,3 +14,4 @@ export 'src/routing/route_pattern.dart';
 export 'src/routing/route_stack.dart';
 export 'src/routing/route_state.dart';
 export 'src/inspection/route_table_warning.dart';
+export 'src/routing/route_factories.dart';

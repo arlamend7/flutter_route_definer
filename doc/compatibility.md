@@ -1,6 +1,6 @@
 # Compatibility and validation
 
-Research/implementation date: **2026-09-23**. Version 3.0.0 is prepared in this checkout and is not published by this task.
+Original compatibility research: **2026-09-23**. This checkout now prepares **3.2.0** with the same SDK constraints. See the [current execution record and remaining gates](release-3.2.0-validation.md). The historical matrix below does not claim new 3.2.0 execution.
 
 ## SDK and dependency policy
 
