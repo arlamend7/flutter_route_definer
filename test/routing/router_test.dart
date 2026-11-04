@@ -16,6 +16,7 @@ RouteDefinerRouter makeRouter(List<RouteDefiner<dynamic>> routes,
         int redirectLimit = 8,
         Duration? timeout,
         void Function(RouteFailure)? onError,
+        void Function(String)? onTitleChanged,
         Listenable? refresh}) =>
     RouteDefinerRouter(
       loadingBuilder: (_) => const default_router.LoadingPage(),
@@ -30,6 +31,7 @@ RouteDefinerRouter makeRouter(List<RouteDefiner<dynamic>> routes,
       appTitle: 'Test',
       resolutionTimeout: timeout,
       onError: onError,
+      onTitleChanged: onTitleChanged,
       notFoundBuilder: (_, state) => Text('Unknown: ${state.path}'),
     );
 
@@ -523,6 +525,7 @@ void main() {
       (tester) async {
     final checked = <Object?>[];
     final titled = <Object?>[];
+    final published = <String>[];
     final router = makeRouter([
       page<void>('/'),
       RouteDefiner<int>(
@@ -538,7 +541,7 @@ void main() {
             }
           ],
           builder: (_, state) => Text('Arguments: ${state.arguments}'))
-    ]);
+    ], onTitleChanged: published.add);
     await mount(tester, router);
     final result = router.push<int>('/item', arguments: 'before');
     await tester.pumpAndSettle();
@@ -552,6 +555,7 @@ void main() {
     expect(find.text('Arguments: after'), findsOneWidget);
     expect(checked, ['before', 'after']);
     expect(titled.last, 'after');
+    expect(published.last, 'Item: after');
     expect(router.currentConfiguration.locations.last.id,
         previous.locations.last.id);
     await router.pop<int>(9);

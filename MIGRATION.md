@@ -1,5 +1,19 @@
 # Migration guide
 
+## Upcoming breaking change: opt-in title publishing
+
+The core package no longer depends on `web` or updates browser titles automatically.
+Title resolvers run only when `onTitleChanged` is supplied on `RouteDefinerRouter`
+or `createMaterialRouter`. Existing fallback, asynchronous cancellation and dialog
+behavior remain available when enabled.
+
+To retain browser titles, add `web` to your application's dependencies, import
+`package:web/web.dart` as `web` in a web-only entry point, and pass
+`onTitleChanged: (title) => web.document.title = title`. Applications targeting
+both web and native should keep browser imports behind their own conditional
+import. Native apps can supply a callback for their own title integration or
+omit it to disable title resolution entirely.
+
 ## Adopting 3.2.0 from 3.1.0
 
 No existing API is removed. The explicit constructor and legacy `routeFactory`

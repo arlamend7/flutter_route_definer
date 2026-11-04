@@ -53,7 +53,6 @@ Run `flutter pub get`. Import the core API from `package:route_definer/route_def
 | Flutter | `>=3.27.0` | Flutter 3.47.5 |
 | Dart | `>=3.6.0 <4.0.0` | Dart 3.13.4, bundled with that Flutter SDK |
 | `meta` annotations | `^1.15.0` | Imported directly for compatibility with older Flutter SDKs |
-| `web` runtime dependency | `>=0.4.0 <2.0.0` | Normal and minimum dependency resolutions are checked separately |
 
 The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the latest validation record](doc/release-3.2.0-validation.md) for results and limitations. Do not add a hosted `^3.2.0` dependency until that version is actually published.
 
@@ -362,7 +361,7 @@ The import alias is your choice. `as default_router` follows Dart conventions; `
 
 ## Set browser titles
 
-Set a definition's `title` to the complete browser title:
+Title publishing is opt in. Set a definition's `title` to the complete title:
 
 ```dart
 RouteDefiner<void>(
@@ -372,7 +371,18 @@ RouteDefiner<void>(
 )
 ```
 
-The callback may return `String` or `Future<String>`. Missing, empty or failed titles fall back to the router's `appTitle` (default empty string). `appTitle` is not automatically prepended. The router manages browser-title observation, ignores stale asynchronous results, and keeps the underlying page title while dialogs are open. It does not set AppBar or native window titles.
+The callback may return `String` or `Future<String>`. Missing, empty or failed titles fall back to the router's `appTitle` (default empty string). `appTitle` is not automatically prepended. Set `onTitleChanged` on `RouteDefinerRouter` or `createMaterialRouter` to enable title resolution. Without this callback, titles are not resolved or published. The router ignores stale asynchronous results and keeps the underlying page title while dialogs are open. Your callback decides how to apply the title; the package does not update browser, AppBar or native window titles itself.
+
+For a web application, add `web` to **your application’s** dependencies and configure:
+
+```dart
+import 'package:web/web.dart' as web;
+
+// Inside RouteDefinerRouter(...) or createMaterialRouter(...):
+onTitleChanged: (title) => web.document.title = title,
+```
+
+Keep this import in a web-only entry point or behind an application-owned conditional import if the application also targets native platforms. The core package has no `web` dependency.
 
 ## Inspect routes, stack and history
 
@@ -484,7 +494,8 @@ Constructor settings, in addition to `routes` and the four page builders (option
 | Setting | Default | Purpose |
 |---|---|---|
 | `initialRoute` | `'/'` | Initial location; a non-root platform entry takes precedence. |
-| `appTitle` | `''` | Browser-title fallback. |
+| `appTitle` | `''` | Resolved-title fallback. |
+| `onTitleChanged` | `null` | Opt in to title resolution and receive resolved titles. |
 | `onError` | `null` | Report guard/resolution failures to your application. |
 | `resolutionTimeout` | `null` | Optional duration for a complete guard attempt. |
 | `redirectLimit` | `5` | Maximum redirect chain; must be at least 1. |

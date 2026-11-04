@@ -1,14 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:route_definer/src/titles/browser_title_stub.dart'
-    if (dart.library.js_interop) 'package:route_definer/src/titles/browser_title.dart';
 import 'package:route_definer/src/routing/route_definer_router.dart';
 
-/// Updates the browser title for the active named page.
+/// Publishes the resolved title for the active named page.
 ///
 /// Dialogs keep the underlying page title. Stale successes and failures are
-/// ignored. This does not update AppBar widgets or native window titles.
+/// ignored. The callback decides how to use the title.
 class TitleObserver extends NavigatorObserver {
   TitleObserver({required RouteDefinerRouter router, this.onTitleChanged})
       : _router = router;
@@ -84,7 +82,6 @@ class TitleObserver extends NavigatorObserver {
 
   void _publish(String title, int generation) {
     if (!_isCurrent(generation)) return;
-    updateBrowserTitle(title);
     onTitleChanged?.call(title);
   }
 

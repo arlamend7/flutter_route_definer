@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:route_definer/route_definer.dart';
 import 'package:route_definer/default_pages.dart' as default_router;
+import 'package:route_definer/material.dart' as material_router;
 import 'package:route_definer/src/titles/title_observer.dart';
 
 void main() {
-  RouteDefinerRouter router({Future<String>? slow}) => RouteDefinerRouter(
+  RouteDefinerRouter router(
+          {Future<String>? slow, void Function(String)? onTitleChanged}) =>
+      RouteDefinerRouter(
+        onTitleChanged: onTitleChanged,
         loadingBuilder: (_) => const default_router.LoadingPage(),
         deniedBuilder: (_, __) => const default_router.DeniedPage(),
         notFoundBuilder: (_, __) => const default_router.NotFoundPage(),
@@ -28,6 +32,44 @@ void main() {
       );
   MaterialPageRoute<void> page(String name) => MaterialPageRoute<void>(
       settings: RouteSettings(name: name), builder: (_) => const SizedBox());
+
+  for (final material in [false, true]) {
+    for (final enabled in [false, true]) {
+      testWidgets(
+          '${material ? 'Material helper' : 'explicit router'} title publishing is ${enabled ? 'enabled' : 'disabled'}',
+          (tester) async {
+        var resolutions = 0;
+        final titles = <String>[];
+        final routes = [
+          RouteDefiner<void>(
+              path: '/',
+              title: (_) {
+                resolutions++;
+                return 'Home';
+              },
+              builder: (_, __) => const SizedBox()),
+          RouteDefiner<void>(
+              path: '/next', builder: (_, __) => const SizedBox()),
+        ];
+        final callback = enabled ? titles.add : null;
+        final instance = material
+            ? material_router.createMaterialRouter(
+                routes: routes, appTitle: 'App', onTitleChanged: callback)
+            : (router(onTitleChanged: callback)..updateRoutes(routes));
+        await tester
+            .pumpWidget(MaterialApp.router(routerConfig: instance.config));
+        await tester.pumpAndSettle();
+        expect(resolutions, enabled ? greaterThan(0) : 0);
+        expect(titles, enabled ? isNotEmpty : isEmpty);
+        if (enabled) expect(titles.last, 'Home');
+        instance.go('/next');
+        await tester.pumpAndSettle();
+        if (enabled) expect(titles.last, 'App');
+        await tester.pumpWidget(const SizedBox());
+        instance.dispose();
+      });
+    }
+  }
 
   testWidgets(
       'one title callback receives URI state; missing and failed titles use appTitle',

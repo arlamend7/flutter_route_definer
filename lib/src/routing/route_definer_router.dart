@@ -69,6 +69,7 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
   RouteDefinerRouter({
     this.initialRoute = '/',
     this.appTitle = '',
+    this.onTitleChanged,
     required this.loadingBuilder,
     required this.deniedBuilder,
     required this.notFoundBuilder,
@@ -109,8 +110,13 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
 
   final String initialRoute;
 
-  /// Browser title used when the active route has no title of its own.
+  /// Title used when the active route has no title of its own.
   final String appTitle;
+
+  /// Receives resolved page titles, including the [appTitle] fallback.
+  /// Omit to disable title resolution and publishing. Browser or native title
+  /// updates are the application's responsibility.
+  final void Function(String title)? onTitleChanged;
 
   /// Required UI while guards are pending. Choose your own or an optional page.
   final Widget Function(CurrentRoute) loadingBuilder;
@@ -643,7 +649,9 @@ class RouteDefinerRouter extends RouterDelegate<RouteStack>
           onDidRemovePage: _didRemovePage,
           observers: [
             _removalObserver,
-            _titleObserver ??= TitleObserver(router: this),
+            if (onTitleChanged != null)
+              _titleObserver ??=
+                  TitleObserver(router: this, onTitleChanged: onTitleChanged),
             ..._observers,
           ],
         ));

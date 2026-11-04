@@ -35,7 +35,7 @@ The package declares `web` for browser integration and `meta: ^1.15.0` for annot
 | WebAssembly | Separate release build and actual Wasm execution in Chrome, with the same browser assertions | Other supported Wasm browsers and production hosting headers |
 | Android | Flutter widget tests of Navigator/PopScope behavior | Device build, app links, predictive-back preview/commit/cancel |
 | iOS | Typed Cupertino factory in widget tests | Device build, universal links and swipe-back gestures |
-| macOS/Windows/Linux | Shared Dart/widget code and native title stub; macOS hosts the tests | Target application builds, window/focus behavior and native link setup |
+| macOS/Windows/Linux | Shared Dart/widget code and optional title callback; macOS hosts the tests | Target application builds, window/focus behavior and native link setup |
 
 A build is not a platform interaction test. CI's Linux host is not evidence of a Linux desktop application test. Native physical-platform and standalone-design-package checks remain release checklist items, not claimed successes.
 

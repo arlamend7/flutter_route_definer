@@ -35,6 +35,7 @@ void main() {
     historyLimit: 32,
     diagnostics: NavigationDiagnostics(logger: logs.add),
     appTitle: 'Browser test',
+    onTitleChanged: (title) => web.document.title = title,
     onError: (failure) => errors.add(failure.error.toString()),
     notFoundBuilder: (_, __) => const Scaffold(body: Text('Unknown')),
     routes: [

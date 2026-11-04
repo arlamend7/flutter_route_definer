@@ -81,9 +81,10 @@ class RouteDefiner<T> {
   final List<RouteGuard> guards;
   final Map<String, Object>? data;
 
-  /// Resolves this page's complete browser title from its URI state.
+  /// Resolves this page's title from its URI state when title publishing is enabled.
   ///
   /// A missing, empty or failed title uses the router's appTitle fallback.
+  /// Set the router's onTitleChanged callback to enable title resolution.
   final FutureOr<String> Function(RouteState)? title;
   final RouteOptions? options;
 
