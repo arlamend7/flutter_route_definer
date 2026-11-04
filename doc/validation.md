@@ -1,6 +1,6 @@
 # 3.0.0 implementation validation
 
-For the current candidate, see [3.2.0 validation](release-3.2.0-validation.md).
+For the current candidate, see [4.0.0 validation](release-4.0.0.md).
 
 For the subsequent state-preservation, typed-navigation, recipes and platform-test changes, see [the 2026-09-27/28 validation record](improvements-validation.md). The results below describe the earlier checkpoint.
 

@@ -1,6 +1,6 @@
 # Compatibility and validation
 
-Original compatibility research: **2026-09-23**. This checkout now prepares **3.2.0** with the same SDK constraints. See the [current execution record and remaining gates](release-3.2.0-validation.md). The historical matrix below does not claim new 3.2.0 execution.
+Original compatibility research: **2026-09-23**. This checkout now prepares **4.0.0** with the same SDK constraints. See the [current execution record and remaining gates](release-4.0.0.md). The historical matrix below does not claim new 4.0.0 execution.
 
 ## SDK and dependency policy
 

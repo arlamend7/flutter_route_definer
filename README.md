@@ -12,9 +12,9 @@ The library provides:
 
 Choose it when you want a small, explicit route table without code generation. Automatic shell/tab orchestration, wildcard matching and automatic URL composition across nested navigators are outside its scope.
 
-**This checkout prepares an unpublished 3.2.0 release, building on the breaking API changes in 3.0.0.** See [migration](MIGRATION.md) before upgrading an existing application.
+**This checkout prepares 4.0.0, which makes title publishing opt in and removes the core `web` dependency.** See [migration](MIGRATION.md) before upgrading an existing application.
 
-See the [3.2.0 release plan and API guide](doc/release-3.2.0.md) for route presets, redirect definitions, context lookup, query helpers, and validation gates.
+See the [4.0.0 release notes and validation record](doc/release-4.0.0.md) for the breaking change and browser setup. The [3.2.0 API guide](doc/release-3.2.0.md) covers the retained convenience APIs.
 
 ## Contents
 
@@ -54,7 +54,7 @@ Run `flutter pub get`. Import the core API from `package:route_definer/route_def
 | Dart | `>=3.6.0 <4.0.0` | Dart 3.13.4, bundled with that Flutter SDK |
 | `meta` annotations | `^1.15.0` | Imported directly for compatibility with older Flutter SDKs |
 
-The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the latest validation record](doc/release-3.2.0-validation.md) for results and limitations. Do not add a hosted `^3.2.0` dependency until that version is actually published.
+The declared SDK floor is not a claim that every compatible SDK/platform has been executed. Other SDK matrix cells and native-device gesture checks remain release gates. See [compatibility](doc/compatibility.md) and [the latest validation record](doc/release-4.0.0.md) for results and limitations. Do not add a hosted `^4.0.0` dependency until that version is actually published.
 
 ## Run the example
 
@@ -657,7 +657,7 @@ Version 3 removes static `AppRouter`, `GlobalRouteDefiner`, named-route adapters
 - [Minimal quick start](example/lib/minimal.dart), [full example application](example/lib/main.dart) and [navigation inspector](example/lib/widgets/navigation_inspector.dart)
 - [Inspection investigation, guarantees and event semantics](doc/route-inspection.md)
 - [Platform setup, restoration and custom routes](doc/navigation.md)
-- [Compatibility](doc/compatibility.md), [current validation](doc/release-3.2.0-validation.md) and [pub points / CI findings](doc/pub-score.md)
+- [Compatibility](doc/compatibility.md), [current validation](doc/release-4.0.0.md) and [pub points / CI findings](doc/pub-score.md)
 - [Migration](MIGRATION.md), [changelog](CHANGELOG.md), [contribution/release checks](CONTRIBUTING.md) and [security reporting](SECURITY.md)
 - [Performance measurements and their scope](doc/performance.md)
 - [Published API reference](https://arlamend7.github.io/flutter_route_definer/route_definer/) — may describe the preceding release. Run `dart doc --output build/api` for the API in this checkout.

@@ -1,6 +1,6 @@
 # Migration guide
 
-## Upcoming breaking change: opt-in title publishing
+## Adopting 4.0.0 from 3.2.0
 
 The core package no longer depends on `web` or updates browser titles automatically.
 Title resolvers run only when `onTitleChanged` is supplied on `RouteDefinerRouter`

@@ -1,6 +1,6 @@
 # Native and additional browser validation
 
-See [3.2.0 results and outstanding release gates](release-3.2.0-validation.md).
+See [4.0.0 results and outstanding release gates](release-4.0.0.md).
 
 ## Native fixture
 

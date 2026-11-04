@@ -1,4 +1,4 @@
-## Unreleased
+## 4.0.0
 
 - **Breaking:** Make title resolution and publishing opt in via `onTitleChanged` on `RouteDefinerRouter` and `createMaterialRouter`. Browser titles are no longer updated automatically; applications own title updates.
 - Remove the core `web` dependency and browser title implementations. See `MIGRATION.md` for browser setup.
